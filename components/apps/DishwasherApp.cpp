@@ -176,7 +176,9 @@ void DishwasherApp::refresh() {
     lv_label_set_text(status_label_, state_text(state_));
     lv_obj_set_style_text_color(status_label_, lv_color_hex(state_color(state_)), 0);
     char time_buf[16];
-    std::snprintf(time_buf, sizeof(time_buf), "%02u:%02u", remaining_sec_ / 60, remaining_sec_ % 60);
+    std::snprintf(time_buf, sizeof(time_buf), "%02u:%02u",
+                  static_cast<unsigned>(remaining_sec_ / 60),
+                  static_cast<unsigned>(remaining_sec_ % 60));
     lv_label_set_text(time_label_, time_buf);
     lv_arc_set_value(arc_, total_sec_ == 0 ? 0 : static_cast<int>((total_sec_ - remaining_sec_) * 100 / total_sec_));
 
@@ -207,7 +209,9 @@ void DishwasherApp::on_update(float delta_sec) {
             remaining_sec_ = remaining_sec_ > 1 ? remaining_sec_ - 1 : 0;
             if (time_label_) {
                 char buf[16];
-                std::snprintf(buf, sizeof(buf), "%02u:%02u", remaining_sec_ / 60, remaining_sec_ % 60);
+                std::snprintf(buf, sizeof(buf), "%02u:%02u",
+                              static_cast<unsigned>(remaining_sec_ / 60),
+                              static_cast<unsigned>(remaining_sec_ % 60));
                 lv_label_set_text(time_label_, buf);
             }
             if (arc_ && total_sec_ > 0)
@@ -222,4 +226,3 @@ void DishwasherApp::on_update(float delta_sec) {
 }
 
 } // namespace apps
-

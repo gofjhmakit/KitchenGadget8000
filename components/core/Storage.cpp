@@ -5,7 +5,6 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
-#include <sys/statvfs.h>
 #include <unistd.h>
 #include "esp_log.h"
 #include "esp_spiffs.h"
@@ -99,11 +98,11 @@ std::vector<std::string> Storage::list_files(const std::string& dir, const std::
 }
 
 size_t Storage::free_bytes() const {
-    struct statvfs st{};
-    if (statvfs(base_path_.c_str(), &st) != 0) {
+    size_t total = 0, used = 0;
+    if (esp_spiffs_info(nullptr, &total, &used) != ESP_OK || total == 0) {
         return 0;
     }
-    return st.f_bavail * st.f_frsize;
+    return total - used;
 }
 
 } // namespace core

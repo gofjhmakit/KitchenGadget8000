@@ -33,6 +33,10 @@ std::tm TimeService::now_local() const {
     return tm;
 }
 
+int TimeService::hour() const {
+    return now_local().tm_hour;
+}
+
 std::string TimeService::time_string(bool with_seconds) const {
     char buf[16];
     auto tm = now_local();

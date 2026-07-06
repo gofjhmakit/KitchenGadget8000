@@ -11,7 +11,9 @@ void update_state(lv_event_t* e) {
     auto* app = static_cast<LightingApp*>(lv_event_get_user_data(e));
     const bool on = lv_obj_has_state(app->power_switch_, LV_STATE_CHECKED);
     char buf[96];
-    std::snprintf(buf, sizeof(buf), "%s • %d%% • %dK", on ? "On" : "Off", lv_slider_get_value(app->brightness_slider_), 2200 + lv_slider_get_value(app->temp_slider_) * 40);
+    std::snprintf(buf, sizeof(buf), "%s • %d%% • %dK", on ? "On" : "Off",
+                  static_cast<int>(lv_slider_get_value(app->brightness_slider_)),
+                  2200 + static_cast<int>(lv_slider_get_value(app->temp_slider_)) * 40);
     lv_label_set_text(app->scene_label_, buf);
 }
 }

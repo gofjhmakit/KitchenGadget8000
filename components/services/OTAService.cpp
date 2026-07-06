@@ -36,9 +36,11 @@ bool OTAService::check_for_update(const std::string& repo, std::string& version,
 
 bool OTAService::apply_update(const std::string& url, ProgressCallback progress_cb) {
     if (progress_cb) progress_cb(0);
-    esp_http_client_config_t config{};
-    config.url = url.c_str();
-    const esp_err_t err = esp_https_ota(&config);
+    esp_http_client_config_t http_cfg{};
+    http_cfg.url = url.c_str();
+    esp_https_ota_config_t ota_cfg{};
+    ota_cfg.http_config = &http_cfg;
+    const esp_err_t err = esp_https_ota(&ota_cfg);
     if (progress_cb) progress_cb(err == ESP_OK ? 100 : -1);
     return err == ESP_OK;
 }

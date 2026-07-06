@@ -276,16 +276,16 @@ void LauncherApp::on_update(float) {
     const auto charge = pm.charge_state();
     char battery[40];
     if (charge == core::ChargeState::CHARGING) {
-        std::snprintf(battery, sizeof(battery), "⚡ %u%%", pct);
+        std::snprintf(battery, sizeof(battery), "⚡ %u%%", static_cast<unsigned>(pct));
         lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::SUCCESS), 0);
     } else if (charge == core::ChargeState::FULL) {
         std::snprintf(battery, sizeof(battery), "⚡ Full");
         lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::SUCCESS), 0);
     } else if (pct <= 15) {
-        std::snprintf(battery, sizeof(battery), "🪫 %u%%", pct);
+        std::snprintf(battery, sizeof(battery), "🪫 %u%%", static_cast<unsigned>(pct));
         lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::ERROR), 0);
     } else {
-        std::snprintf(battery, sizeof(battery), "🔋 %u%%", pct);
+        std::snprintf(battery, sizeof(battery), "🔋 %u%%", static_cast<unsigned>(pct));
         lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::GOLD), 0);
     }
     lv_label_set_text(battery_label_, battery);
@@ -295,4 +295,3 @@ void LauncherApp::on_update(float) {
 }
 
 } // namespace apps
-

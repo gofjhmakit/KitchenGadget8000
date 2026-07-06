@@ -90,7 +90,6 @@ bool Display::init() {
     panel_config.timings.vsync_front_porch = 13;
     panel_config.timings.vsync_pulse_width = 3;
     panel_config.flags.fb_in_psram = 1;
-    panel_config.flags.relax_on_idle = 1;
 
     esp_lcd_panel_handle_t panel = nullptr;
     esp_err_t err = esp_lcd_new_rgb_panel(&panel_config, &panel);

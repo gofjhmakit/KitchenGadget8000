@@ -71,7 +71,7 @@ void ScreensaverApp::on_update(float) {
     lv_label_set_text(date_label_, services::TimeService::instance().date_string().c_str());
     lv_label_set_text(day_label_, services::TimeService::instance().day_name().c_str());
     char buf[24];
-    std::snprintf(buf, sizeof(buf), "%u%%", core::PowerManager::instance().battery_percent());
+    std::snprintf(buf, sizeof(buf), "%u%%", static_cast<unsigned>(core::PowerManager::instance().battery_percent()));
     lv_label_set_text(battery_label_, buf);
 }
 

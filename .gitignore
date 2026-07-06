@@ -72,7 +72,8 @@ Testing/
 secrets.h
 main/secrets.h
 
-# ESP-IDF generated
+# Local helper scripts
+kg8k.sh
 sdkconfig
 sdkconfig.old
 managed_components/

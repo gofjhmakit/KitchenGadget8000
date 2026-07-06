@@ -14,6 +14,7 @@ public:
     std::string day_name() const;
     std::string timestamp_string() const;
     std::tm now_local() const;
+    int hour() const;
 
 public:
     TimeService() = default;

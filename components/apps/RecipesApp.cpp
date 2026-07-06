@@ -15,14 +15,11 @@ namespace apps {
 namespace {
 
 void timer_from_text(lv_event_t* e) {
-    auto* app = static_cast<RecipesApp*>(lv_event_get_user_data(e));
     const uint32_t seconds = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(
         lv_obj_get_user_data(lv_event_get_target_obj(e))));
     if (auto* base = core::AppManager::instance().app(core::AppId::TIMERS)) {
-        if (auto* timers = dynamic_cast<TimersApp*>(base)) {
-            timers->add_timer(seconds, "Recipe", "🍳");
-            core::Notifications::instance().push(core::NotificationType::SUCCESS, "Timer added", "Recipe timer created.");
-        }
+        static_cast<TimersApp*>(base)->add_timer(seconds, "Recipe", "🍳");
+        core::Notifications::instance().push(core::NotificationType::SUCCESS, "Timer added", "Recipe timer created.");
     }
     core::Navigation::instance().navigate_to(core::AppId::TIMERS, core::AppManager::Transition::SLIDE_LEFT);
 }
@@ -56,7 +53,8 @@ void build_step_section(lv_obj_t* col, RecipesApp* app, const services::Recipe& 
 
         for (uint32_t secs : services::MarkdownParser::instance().extract_timer_seconds(r.instructions[step_idx])) {
             char btn_txt[64];
-            std::snprintf(btn_txt, sizeof(btn_txt), LV_SYMBOL_BELL " Start %u min timer", secs / 60);
+            std::snprintf(btn_txt, sizeof(btn_txt), LV_SYMBOL_BELL " Start %u min timer",
+                          static_cast<unsigned>(secs / 60));
             lv_obj_t* btn = ui::create_gold_button(col, btn_txt);
             lv_obj_set_user_data(btn, reinterpret_cast<void*>(static_cast<uintptr_t>(secs)));
             lv_obj_add_event_cb(btn, timer_from_text, LV_EVENT_CLICKED, app);
@@ -457,4 +455,3 @@ void RecipesApp::on_unmount() {
 void RecipesApp::on_update(float) {}
 
 } // namespace apps
-

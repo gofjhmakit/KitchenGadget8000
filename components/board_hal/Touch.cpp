@@ -34,8 +34,14 @@ bool Touch::init() {
         return false;
     }
 
-    esp_lcd_panel_io_i2c_config_t io_cfg = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
+    // Initialise manually to avoid C99-style out-of-order designated initialiser in C++
+    esp_lcd_panel_io_i2c_config_t io_cfg{};
     io_cfg.dev_addr = TouchConfig::GT911_ADDR;
+    io_cfg.control_phase_bytes = 1;
+    io_cfg.dc_bit_offset = 0;
+    io_cfg.lcd_cmd_bits = 16;
+    io_cfg.scl_speed_hz = 100000;
+    io_cfg.flags.disable_control_phase = 1;
     esp_lcd_panel_io_handle_t io_handle = nullptr;
     err = esp_lcd_new_panel_io_i2c(bus_handle, &io_cfg, &io_handle);
     if (err != ESP_OK) {

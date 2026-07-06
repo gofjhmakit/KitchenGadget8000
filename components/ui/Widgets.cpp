@@ -22,7 +22,7 @@ void keypad_event(lv_event_t* e) {
     } else {
         lv_textarea_add_text(ta, txt);
     }
-    lv_event_send(ta, LV_EVENT_VALUE_CHANGED, nullptr);
+    lv_obj_send_event(ta, LV_EVENT_VALUE_CHANGED, nullptr);
 }
 }
 
@@ -264,7 +264,7 @@ struct NumpadModalCtx {
 void numpad_modal_confirm(lv_event_t* e) {
     auto* ctx = static_cast<NumpadModalCtx*>(lv_event_get_user_data(e));
     lv_textarea_set_text(ctx->target_ta, lv_textarea_get_text(ctx->modal_ta));
-    lv_event_send(ctx->target_ta, LV_EVENT_VALUE_CHANGED, nullptr);
+    lv_obj_send_event(ctx->target_ta, LV_EVENT_VALUE_CHANGED, nullptr);
     lv_obj_delete(ctx->overlay);
     delete ctx;
 }

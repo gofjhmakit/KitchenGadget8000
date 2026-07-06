@@ -18,9 +18,6 @@ public:
     bool is_visible() const { return visible_; }
     lv_obj_t* obj() const { return container_; }
 
-private:
-    BottomNav() = default;
-
     struct NavItem {
         AppId   id;
         const char* icon;
@@ -33,6 +30,9 @@ private:
         {AppId::SHOPPING_LIST, LV_SYMBOL_CHARGE,   "Shop"},
         {AppId::WEATHER,       LV_SYMBOL_SETTINGS, "More"},
     };
+
+private:
+    BottomNav() = default;
 
     lv_obj_t* container_{nullptr};
     lv_obj_t* buttons_[5]{};

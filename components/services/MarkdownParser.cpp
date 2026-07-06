@@ -59,7 +59,7 @@ std::vector<uint32_t> extract_timers_from_step(const std::string& text) {
         static const char* kMinWords[]  = {"minutes", "minute", "mins", "min", nullptr};
         for (int w = 0; kHourWords[w] != nullptr; ++w) {
             const size_t wl = std::strlen(kHourWords[w]);
-            if (std::strncasecmp(unit_begin, kHourWords[w], wl) == 0 &&
+            if (::strncasecmp(unit_begin, kHourWords[w], wl) == 0 &&
                 (rest.size() == wl || !std::isalpha(static_cast<unsigned char>(rest[wl])))) {
                 is_hours = true;
                 matched  = true;
@@ -69,7 +69,7 @@ std::vector<uint32_t> extract_timers_from_step(const std::string& text) {
         if (!matched) {
             for (int w = 0; kMinWords[w] != nullptr; ++w) {
                 const size_t wl = std::strlen(kMinWords[w]);
-                if (std::strncasecmp(unit_begin, kMinWords[w], wl) == 0 &&
+                if (::strncasecmp(unit_begin, kMinWords[w], wl) == 0 &&
                     (rest.size() == wl || !std::isalpha(static_cast<unsigned char>(rest[wl])))) {
                     matched = true;
                     break;

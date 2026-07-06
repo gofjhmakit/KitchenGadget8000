@@ -50,8 +50,8 @@ std::string format_time(uint32_t seconds) {
     const uint32_t h = seconds / 3600;
     const uint32_t m = (seconds % 3600) / 60;
     const uint32_t s = seconds % 60;
-    if (h > 0) std::snprintf(buf, sizeof(buf), "%u:%02u:%02u", h, m, s);
-    else std::snprintf(buf, sizeof(buf), "%02u:%02u", m, s);
+    if (h > 0) std::snprintf(buf, sizeof(buf), "%u:%02u:%02u", static_cast<unsigned>(h), static_cast<unsigned>(m), static_cast<unsigned>(s));
+    else std::snprintf(buf, sizeof(buf), "%02u:%02u", static_cast<unsigned>(m), static_cast<unsigned>(s));
     return buf;
 }
 } // anonymous namespace
