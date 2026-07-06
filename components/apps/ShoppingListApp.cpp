@@ -84,7 +84,8 @@ void ShoppingListApp::show_add_dialog() {
     lv_obj_t* t = ui::create_section_title(hdr, "Add Item"); (void)t;
     lv_obj_t* close = ui::create_gold_button(hdr, LV_SYMBOL_CLOSE);
     lv_obj_add_event_cb(close, [](lv_event_t* e){
-        lv_obj_delete(lv_obj_get_parent(lv_obj_get_parent(lv_event_get_target_obj(e))));
+        // close → hdr → dialog → overlay  (3 levels)
+        lv_obj_delete(lv_obj_get_parent(lv_obj_get_parent(lv_obj_get_parent(lv_event_get_target_obj(e)))));
     }, LV_EVENT_CLICKED, nullptr);
 
     lv_obj_t* ta = lv_textarea_create(dialog);
@@ -116,7 +117,8 @@ void ShoppingListApp::show_add_dialog() {
         auto* app = static_cast<ShoppingListApp*>(lv_event_get_user_data(e));
         lv_obj_t* dlg = lv_obj_get_parent(lv_event_get_target_obj(e));
         lv_obj_t* text_ta = static_cast<lv_obj_t*>(lv_obj_get_user_data(dlg));
-        lv_obj_t* dd = lv_obj_get_child(dlg, 5); // cat dropdown (child index 5)
+        // Dialog children in order: 0=header, 1=textarea, 2=category-label, 3=dropdown, 4=add-btn
+        lv_obj_t* dd = lv_obj_get_child(dlg, 3);
         const char* txt = lv_textarea_get_text(text_ta);
         if (*txt) {
             char cat[24]; lv_dropdown_get_selected_str(dd, cat, sizeof(cat));

@@ -235,7 +235,8 @@ void TimersApp::show_add_timer_dialog(lv_obj_t* parent) {
     (void)dlg_title;
     lv_obj_t* close_btn = ui::create_gold_button(hdr_row, LV_SYMBOL_CLOSE);
     lv_obj_add_event_cb(close_btn, [](lv_event_t* e){
-        lv_obj_delete(lv_obj_get_parent(lv_obj_get_parent(lv_event_get_target_obj(e))));
+        // close_btn → hdr_row → dialog → overlay  (3 levels)
+        lv_obj_delete(lv_obj_get_parent(lv_obj_get_parent(lv_obj_get_parent(lv_event_get_target_obj(e)))));
     }, LV_EVENT_CLICKED, nullptr);
 
     // Quick-preset chips
