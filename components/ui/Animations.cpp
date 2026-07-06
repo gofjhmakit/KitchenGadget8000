@@ -100,4 +100,36 @@ void stop_pulse(lv_obj_t* obj) {
     lv_obj_set_style_shadow_width(obj, 0, 0);
 }
 
+void animate_arc_to(lv_obj_t* arc, int32_t to_value, uint32_t duration) {
+    lv_anim_delete(arc, set_arc);
+    const int32_t from_value = lv_arc_get_value(arc);
+    if (from_value == to_value) return;
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, arc);
+    lv_anim_set_values(&a, from_value, to_value);
+    lv_anim_set_duration(&a, duration);
+    lv_anim_set_path_cb(&a, lv_anim_path_ease_out);
+    lv_anim_set_exec_cb(&a, set_arc);
+    lv_anim_start(&a);
+}
+
+void blink(lv_obj_t* obj, uint32_t half_period_ms) {
+    lv_anim_delete(obj, set_opa);
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, obj);
+    lv_anim_set_values(&a, LV_OPA_COVER, LV_OPA_20);
+    lv_anim_set_duration(&a, half_period_ms);
+    lv_anim_set_playback_duration(&a, half_period_ms);
+    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_set_exec_cb(&a, set_opa);
+    lv_anim_start(&a);
+}
+
+void stop_blink(lv_obj_t* obj) {
+    lv_anim_delete(obj, set_opa);
+    lv_obj_set_style_opa(obj, LV_OPA_COVER, 0);
+}
+
 } // namespace ui::anim

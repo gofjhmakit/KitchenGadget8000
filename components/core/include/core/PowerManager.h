@@ -40,6 +40,8 @@ public:
 private:
     PowerManager() = default;
     void set_state(PowerState state);
+    void sample_battery();
+
     float idle_sec_{0.0f};
     float screensaver_timeout_{120.0f};
     bool screensaver_blocked_{false};
@@ -50,6 +52,12 @@ private:
     float battery_voltage_{4.2f};
     float battery_sample_accumulator_{0.0f};
     StateCallback state_cb_;
+
+    // Opaque handle for ADC oneshot unit (adc_oneshot_unit_handle_t).
+    // Null when hardware battery reading is disabled.
+    void* adc_handle_{nullptr};
+    bool hardware_battery_{false};
+    bool hardware_charge_{false};
 };
 
 } // namespace core

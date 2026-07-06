@@ -12,4 +12,12 @@ lv_obj_t* create_spinner(lv_obj_t* parent, int size = 48);
 void pulse_glow(lv_obj_t* obj, uint32_t color = 0xFFD166, uint32_t duration = 900);
 void stop_pulse(lv_obj_t* obj);
 
+// Smoothly animate an arc widget to a new value (0-100).
+// Any in-progress arc animation on the same object is replaced.
+void animate_arc_to(lv_obj_t* arc, int32_t to_value, uint32_t duration = 850);
+
+// Infinite opacity blink — useful for critical-state alerts.
+void blink(lv_obj_t* obj, uint32_t half_period_ms = 400);
+void stop_blink(lv_obj_t* obj);
+
 } // namespace ui::anim

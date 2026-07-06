@@ -157,16 +157,46 @@ void TimersApp::update_timer_display(int slot) {
     if (!timer.active) {
         lv_label_set_text(time_labels_[slot], "+");
         lv_label_set_text(name_labels_[slot], "Add timer");
-        lv_arc_set_value(arcs_[slot], 0);
+        ui::anim::animate_arc_to(arcs_[slot], 0);
         ui::anim::stop_pulse(timer_cards_[slot]);
+        ui::anim::stop_blink(time_labels_[slot]);
+        lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(timer.color), LV_PART_INDICATOR);
+        ui::style_number_label(time_labels_[slot], timer.color);
         return;
     }
-    const int value = timer.duration_sec == 0 ? 0 : static_cast<int>((timer.duration_sec - timer.remaining_sec) * 100 / timer.duration_sec);
-    lv_arc_set_value(arcs_[slot], value);
+
+    const int value = timer.duration_sec == 0 ? 0
+        : static_cast<int>((timer.duration_sec - timer.remaining_sec) * 100 / timer.duration_sec);
+    ui::anim::animate_arc_to(arcs_[slot], value);
+
     lv_label_set_text(time_labels_[slot], timer.expired ? "Done" : format_time(timer.remaining_sec).c_str());
     lv_label_set_text(name_labels_[slot], timer.name);
-    if (timer.expired) ui::anim::pulse_glow(timer_cards_[slot], ui::Color::GOLD_HI, 600);
-    else ui::anim::stop_pulse(timer_cards_[slot]);
+
+    if (timer.expired) {
+        // Bright gold glow pulse on card + blink on time label for alarm state
+        ui::anim::pulse_glow(timer_cards_[slot], ui::Color::GOLD_HI, 500);
+        ui::anim::blink(time_labels_[slot], 350);
+        lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(ui::Color::GOLD_HI), LV_PART_INDICATOR);
+        ui::style_number_label(time_labels_[slot], ui::Color::GOLD_HI);
+    } else if (timer.remaining_sec <= 30) {
+        // Critical: red arc + blinking time label
+        ui::anim::stop_pulse(timer_cards_[slot]);
+        ui::anim::blink(time_labels_[slot], 350);
+        lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(ui::Color::ERROR), LV_PART_INDICATOR);
+        ui::style_number_label(time_labels_[slot], ui::Color::ERROR);
+    } else if (timer.remaining_sec <= 60) {
+        // Warning: orange arc, steady (no blink yet)
+        ui::anim::stop_pulse(timer_cards_[slot]);
+        ui::anim::stop_blink(time_labels_[slot]);
+        lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(ui::Color::WARNING), LV_PART_INDICATOR);
+        ui::style_number_label(time_labels_[slot], ui::Color::WARNING);
+    } else {
+        // Normal: timer's assigned colour
+        ui::anim::stop_pulse(timer_cards_[slot]);
+        ui::anim::stop_blink(time_labels_[slot]);
+        lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(timer.color), LV_PART_INDICATOR);
+        ui::style_number_label(time_labels_[slot], timer.color);
+    }
 }
 
 void TimersApp::handle_timer_expired(int slot) {

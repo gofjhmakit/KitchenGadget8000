@@ -6,6 +6,7 @@
 #include "core/Network.h"
 #include "core/PowerManager.h"
 #include "services/TimeService.h"
+#include "ui/Animations.h"
 #include "ui/Theme.h"
 
 namespace apps {
@@ -110,6 +111,8 @@ void LauncherApp::build_ui(lv_obj_t* parent) {
         lv_label_set_text(name, kApps[i].name);
         lv_obj_set_style_text_font(name, ui::Theme::font_body(), 0);
         lv_obj_set_style_text_color(name, lv_color_hex(ui::Color::GOLD), 0);
+        // Staggered fade-in for a luxurious reveal on launch
+        ui::anim::fade_in(card, 300, static_cast<uint32_t>(i) * 45);
     }
     on_update(0.0f);
 }
@@ -120,9 +123,26 @@ void LauncherApp::on_update(float) {
     if (root_ == nullptr) return;
     lv_label_set_text(clock_label_, services::TimeService::instance().time_string(false).c_str());
     lv_label_set_text(date_label_, services::TimeService::instance().date_string().c_str());
-    char battery[32];
-    std::snprintf(battery, sizeof(battery), "🔋 %u%%", core::PowerManager::instance().battery_percent());
+
+    const auto& pm = core::PowerManager::instance();
+    const uint8_t pct = pm.battery_percent();
+    const auto charge = pm.charge_state();
+    char battery[40];
+    if (charge == core::ChargeState::CHARGING) {
+        std::snprintf(battery, sizeof(battery), "⚡ %u%%", pct);
+        lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::SUCCESS), 0);
+    } else if (charge == core::ChargeState::FULL) {
+        std::snprintf(battery, sizeof(battery), "⚡ Full");
+        lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::SUCCESS), 0);
+    } else if (pct <= 15) {
+        std::snprintf(battery, sizeof(battery), "🪫 %u%%", pct);
+        lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::ERROR), 0);
+    } else {
+        std::snprintf(battery, sizeof(battery), "🔋 %u%%", pct);
+        lv_obj_set_style_text_color(battery_label_, lv_color_hex(ui::Color::GOLD), 0);
+    }
     lv_label_set_text(battery_label_, battery);
+
     const bool connected = core::Network::instance().is_connected();
     lv_label_set_text(wifi_label_, connected ? "📶 Online" : "📡 Offline");
 }
