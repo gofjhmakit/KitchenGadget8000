@@ -1,0 +1,22 @@
+menu "KitchenGadget8000 Configuration"
+
+    config KG8000_WEATHER_LAT
+        string "Weather location latitude"
+        default "62.1302"
+        help
+            Latitude for weather data.
+
+    config KG8000_WEATHER_LON
+        string "Weather location longitude"
+        default "25.6728"
+        help
+            Longitude for weather data.
+
+    config KG8000_SCREENSAVER_TIMEOUT_SEC
+        int "Screensaver timeout (seconds)"
+        default 120
+        range 30 3600
+        help
+            Idle timeout before screensaver activates.
+
+endmenu
