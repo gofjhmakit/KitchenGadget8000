@@ -269,6 +269,26 @@ LightingApp::instance().set_backend(std::make_unique<TradfriBackend>());
 
 ---
 
+## UI Mockups (HTML/CSS)
+
+Static UI mockups live in [`/example`](example/) and are published with GitHub Pages using `.github/workflows/pages.yml`.
+
+- Entry page: `example/index.html`
+- Included screens: Launcher, Timers, Recipes, Weather
+
+### Local preview
+
+Open `example/index.html` directly in a browser, or serve it locally:
+
+```bash
+cd example
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000`.
+
+---
+
 ## Project History
 
 | Version | Platform | Display |
