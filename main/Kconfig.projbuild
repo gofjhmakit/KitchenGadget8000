@@ -1,0 +1,49 @@
+menu "KitchenGadget8000 Configuration"
+
+    config KG8000_WEATHER_LAT
+        string "Weather location latitude"
+        default "62.1302"
+        help
+            Latitude for weather data.
+
+    config KG8000_WEATHER_LON
+        string "Weather location longitude"
+        default "25.6728"
+        help
+            Longitude for weather data.
+
+    config KG8000_SCREENSAVER_TIMEOUT_SEC
+        int "Screensaver timeout (seconds)"
+        default 120
+        range 30 3600
+        help
+            Idle timeout before screensaver activates.
+
+    config KG8000_BATTERY_ADC_CHANNEL
+        int "Battery voltage ADC1 channel"
+        default 6
+        range -1 9
+        help
+            ADC1 channel number used to read battery voltage through a voltage divider.
+            For the CrowPanel Advanced 9" ESP32-P4, ADC1_CHANNEL_6 (GPIO18) is the default.
+            Set to -1 to disable hardware battery reading (software simulation is used instead).
+
+    config KG8000_BATTERY_DIVIDER_RATIO_X10
+        int "Battery voltage divider ratio × 10"
+        default 20
+        range 10 40
+        help
+            Voltage divider ratio multiplied by 10.  A standard 100 kΩ / 100 kΩ divider
+            halves the battery voltage before the ADC pin, so the ratio is 2.0 → enter 20.
+            Adjust if your board uses a different resistor pair.
+
+    config KG8000_CHARGE_GPIO
+        int "Charging-state detection GPIO (active-low)"
+        default 19
+        range -1 55
+        help
+            GPIO number connected to the CHRG / STAT pin of the charging IC.
+            The pin is read as active-low: LOW = charging in progress, HIGH = idle / full.
+            Set to -1 to disable hardware charging detection.
+
+endmenu
