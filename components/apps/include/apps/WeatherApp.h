@@ -12,15 +12,25 @@ public:
     void on_mount(lv_obj_t* parent) override;
     void on_unmount() override;
     void on_update(float delta_sec) override;
-public:
+
     void build_ui(lv_obj_t* parent);
     void refresh();
+
     lv_obj_t* root_{nullptr};
+
+private:
+    lv_obj_t* city_label_{nullptr};
+    lv_obj_t* weather_icon_label_{nullptr};
     lv_obj_t* current_label_{nullptr};
     lv_obj_t* condition_label_{nullptr};
-    lv_obj_t* today_label_{nullptr};
-    lv_obj_t* tomorrow_label_{nullptr};
+    lv_obj_t* feels_like_label_{nullptr};
+    lv_obj_t* humidity_label_{nullptr};
+    lv_obj_t* wind_label_{nullptr};
+    lv_obj_t* forecast_day_labels_[5]{};
+    lv_obj_t* forecast_icon_labels_[5]{};
+    lv_obj_t* forecast_temp_labels_[5]{};
     lv_obj_t* updated_label_{nullptr};
+    float refresh_accumulator_{0.0f};
 };
 
 } // namespace apps

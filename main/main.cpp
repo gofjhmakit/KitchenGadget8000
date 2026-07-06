@@ -1,5 +1,6 @@
 #include <cstring>
 #include <memory>
+#include <cstdio>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
@@ -11,6 +12,7 @@
 #include "hal/Touch.h"
 #include "ui/Theme.h"
 #include "core/AppManager.h"
+#include "core/BottomNav.h"
 #include "core/Navigation.h"
 #include "core/Storage.h"
 #include "core/Settings.h"
@@ -37,6 +39,40 @@
 
 static const char* TAG = "KG8000";
 static SemaphoreHandle_t lvgl_mutex = nullptr;
+
+// ── LVGL SPIFFS filesystem driver ────────────────────────────────────────────
+// Drive letter 'S' — LVGL image paths use the form "S:/spiffs/recipes/foo.jpg"
+// which maps to the POSIX path /spiffs/recipes/foo.jpg on the VFS.
+static lv_fs_drv_t spiffs_lv_drv;
+
+static void* lvgl_spiffs_open(lv_fs_drv_t*, const char* path, lv_fs_mode_t mode) {
+    return fopen(path, (mode == LV_FS_MODE_WR) ? "wb" : "rb");
+}
+static lv_fs_res_t lvgl_spiffs_close(lv_fs_drv_t*, void* fp) {
+    fclose(static_cast<FILE*>(fp)); return LV_FS_RES_OK;
+}
+static lv_fs_res_t lvgl_spiffs_read(lv_fs_drv_t*, void* fp, void* buf, uint32_t btr, uint32_t* br) {
+    *br = fread(buf, 1, btr, static_cast<FILE*>(fp)); return LV_FS_RES_OK;
+}
+static lv_fs_res_t lvgl_spiffs_seek(lv_fs_drv_t*, void* fp, uint32_t pos, lv_fs_whence_t whence) {
+    int w = (whence == LV_FS_SEEK_SET) ? SEEK_SET : (whence == LV_FS_SEEK_CUR) ? SEEK_CUR : SEEK_END;
+    fseek(static_cast<FILE*>(fp), static_cast<long>(pos), w); return LV_FS_RES_OK;
+}
+static lv_fs_res_t lvgl_spiffs_tell(lv_fs_drv_t*, void* fp, uint32_t* pos) {
+    *pos = static_cast<uint32_t>(ftell(static_cast<FILE*>(fp))); return LV_FS_RES_OK;
+}
+
+static void register_lvgl_spiffs_driver() {
+    lv_fs_drv_init(&spiffs_lv_drv);
+    spiffs_lv_drv.letter   = 'S';
+    spiffs_lv_drv.open_cb  = lvgl_spiffs_open;
+    spiffs_lv_drv.close_cb = lvgl_spiffs_close;
+    spiffs_lv_drv.read_cb  = lvgl_spiffs_read;
+    spiffs_lv_drv.seek_cb  = lvgl_spiffs_seek;
+    spiffs_lv_drv.tell_cb  = lvgl_spiffs_tell;
+    lv_fs_drv_register(&spiffs_lv_drv);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 static void lvgl_tick_task(void* arg) {
     while (true) {
@@ -84,6 +120,7 @@ extern "C" void app_main(void) {
 
     core::Storage::instance().init("/spiffs");
     lv_init();
+    register_lvgl_spiffs_driver();
 
     if (!hal::Display::instance().init()) {
         ESP_LOGE(TAG, "Display init failed");
@@ -109,6 +146,7 @@ extern "C" void app_main(void) {
 
     auto& mgr = core::AppManager::instance();
     mgr.set_root_screen(lv_screen_active());
+    core::BottomNav::instance().init(lv_screen_active());
     mgr.register_app(std::make_unique<apps::LauncherApp>());
     mgr.register_app(std::make_unique<apps::ScreensaverApp>());
     mgr.register_app(std::make_unique<apps::TimersApp>());

@@ -39,6 +39,7 @@ public:
     lv_obj_t* arcs_[KitchenTimer::SLOT_COUNT]{};
     lv_obj_t* time_labels_[KitchenTimer::SLOT_COUNT]{};
     lv_obj_t* name_labels_[KitchenTimer::SLOT_COUNT]{};
+    lv_obj_t* play_btns_[KitchenTimer::SLOT_COUNT]{};
     lv_obj_t* empty_label_{nullptr};
     int active_slot_{0};
     float second_accumulator_{0.0f};

@@ -54,18 +54,7 @@ std::string format_time(uint32_t seconds) {
     else std::snprintf(buf, sizeof(buf), "%02u:%02u", m, s);
     return buf;
 }
-
-void dialog_add(lv_event_t* e) {
-    auto* app = static_cast<TimersApp*>(lv_event_get_user_data(e));
-    lv_obj_t* dialog = lv_obj_get_parent(lv_event_get_target_obj(e));
-    lv_obj_t* ta = static_cast<lv_obj_t*>(lv_obj_get_user_data(dialog));
-    const int minutes = std::atoi(lv_textarea_get_text(ta));
-    if (minutes > 0) {
-        app->add_timer(static_cast<uint32_t>(minutes * 60), "Custom", "⏱");
-    }
-    lv_obj_delete(dialog);
-}
-}
+} // anonymous namespace
 
 void TimersApp::on_mount(lv_obj_t* parent) {
     for (size_t i = 0; i < timers_.size(); ++i) timers_[i].color = kColors[i];
@@ -80,25 +69,14 @@ void TimersApp::build_ui(lv_obj_t* parent) {
     lv_obj_set_style_pad_all(col, ui::Spacing::LG, 0);
     lv_obj_set_layout(col, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(col, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_row(col, ui::Spacing::LG, 0);
+    lv_obj_set_style_pad_row(col, ui::Spacing::MD, 0);
 
-    lv_obj_t* title = ui::create_section_title(col, "Kitchen Timers");
-    (void)title;
+    // Header: TIMERS + "+ NEW TIMER" button
+    ui::create_app_header(col, "TIMERS", "+ NEW TIMER",
+        [](lv_event_t* e){ static_cast<TimersApp*>(lv_event_get_user_data(e))->show_add_timer_dialog(static_cast<TimersApp*>(lv_event_get_user_data(e))->root_); },
+        this);
 
-    lv_obj_t* presets = lv_obj_create(col);
-    lv_obj_remove_style_all(presets);
-    lv_obj_set_width(presets, LV_PCT(100));
-    lv_obj_set_layout(presets, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(presets, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_style_pad_gap(presets, ui::Spacing::SM, 0);
-    for (size_t i = 0; i < kPresets.size(); ++i) {
-        lv_obj_t* btn = ui::create_gold_button(presets, kPresetLabels[i]);
-        lv_obj_set_user_data(btn, reinterpret_cast<void*>(static_cast<uintptr_t>(kPresets[i])));
-        lv_obj_add_event_cb(btn, preset_click, LV_EVENT_CLICKED, this);
-    }
-    lv_obj_t* custom = ui::create_gold_button(presets, "Custom");
-    lv_obj_add_event_cb(custom, [](lv_event_t* e){ static_cast<TimersApp*>(lv_event_get_user_data(e))->show_add_timer_dialog(static_cast<TimersApp*>(lv_event_get_user_data(e))->root_); }, LV_EVENT_CLICKED, this);
-
+    // 5-slot timer grid (single row, fills remaining height)
     lv_obj_t* grid = lv_obj_create(col);
     lv_obj_remove_style_all(grid);
     lv_obj_set_size(grid, LV_PCT(100), LV_PCT(100));
@@ -117,17 +95,37 @@ void TimersApp::build_ui(lv_obj_t* parent) {
         lv_obj_set_layout(timer_cards_[i], LV_LAYOUT_FLEX);
         lv_obj_set_flex_flow(timer_cards_[i], LV_FLEX_FLOW_COLUMN);
         lv_obj_set_flex_align(timer_cards_[i], LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_style_pad_row(timer_cards_[i], ui::Spacing::SM, 0);
+
+        // Layout per design: name → arc → time → play/pause button
+        name_labels_[i] = lv_label_create(timer_cards_[i]);
+        lv_obj_set_style_text_color(name_labels_[i], lv_color_hex(ui::Color::TEXT_SEC), 0);
+        lv_obj_set_style_text_font(name_labels_[i], ui::Theme::font_small(), 0);
 
         arcs_[i] = ui::create_progress_ring(timer_cards_[i], kColors[i], 140);
+
         time_labels_[i] = lv_label_create(timer_cards_[i]);
-        name_labels_[i] = lv_label_create(timer_cards_[i]);
         ui::style_number_label(time_labels_[i], kColors[i]);
-        lv_obj_set_style_text_color(name_labels_[i], lv_color_hex(ui::Color::TEXT_SEC), 0);
+
+        // Play/Pause icon button
+        play_btns_[i] = lv_button_create(timer_cards_[i]);
+        lv_obj_set_size(play_btns_[i], 40, 40);
+        lv_obj_set_style_radius(play_btns_[i], LV_RADIUS_CIRCLE, 0);
+        lv_obj_set_style_bg_color(play_btns_[i], lv_color_hex(ui::Color::GOLD_FAINT), 0);
+        lv_obj_set_style_border_color(play_btns_[i], lv_color_hex(ui::Color::GOLD_DIM), 0);
+        lv_obj_set_style_border_width(play_btns_[i], 1, 0);
+        lv_obj_set_user_data(play_btns_[i], reinterpret_cast<void*>(static_cast<intptr_t>(i)));
+        lv_obj_add_event_cb(play_btns_[i], slot_click, LV_EVENT_CLICKED, this);
+        lv_obj_t* play_icon = lv_label_create(play_btns_[i]);
+        lv_label_set_text(play_icon, LV_SYMBOL_PAUSE);
+        lv_obj_set_style_text_color(play_icon, lv_color_hex(ui::Color::GOLD), 0);
+        lv_obj_center(play_icon);
+
         update_timer_display(i);
     }
 }
 
-void TimersApp::on_unmount() { root_ = nullptr; }
+void TimersApp::on_unmount() { root_ = nullptr; for (auto& p : play_btns_) p = nullptr; for (auto& c : timer_cards_) c = nullptr; for (auto& a : arcs_) a = nullptr; for (auto& t : time_labels_) t = nullptr; for (auto& n : name_labels_) n = nullptr; }
 
 bool TimersApp::has_active_timers() const {
     return std::any_of(timers_.begin(), timers_.end(), [](const auto& t){ return t.active && t.running; });
@@ -162,7 +160,14 @@ void TimersApp::update_timer_display(int slot) {
         ui::anim::stop_blink(time_labels_[slot]);
         lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(timer.color), LV_PART_INDICATOR);
         ui::style_number_label(time_labels_[slot], timer.color);
+        if (play_btns_[slot]) lv_obj_add_flag(play_btns_[slot], LV_OBJ_FLAG_HIDDEN);
         return;
+    }
+
+    if (play_btns_[slot]) {
+        lv_obj_remove_flag(play_btns_[slot], LV_OBJ_FLAG_HIDDEN);
+        lv_obj_t* play_icon = lv_obj_get_child(play_btns_[slot], 0);
+        if (play_icon) lv_label_set_text(play_icon, timer.running ? LV_SYMBOL_PAUSE : LV_SYMBOL_PLAY);
     }
 
     const int value = timer.duration_sec == 0 ? 0
@@ -173,25 +178,21 @@ void TimersApp::update_timer_display(int slot) {
     lv_label_set_text(name_labels_[slot], timer.name);
 
     if (timer.expired) {
-        // Bright gold glow pulse on card + blink on time label for alarm state
         ui::anim::pulse_glow(timer_cards_[slot], ui::Color::GOLD_HI, 500);
         ui::anim::blink(time_labels_[slot], 350);
         lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(ui::Color::GOLD_HI), LV_PART_INDICATOR);
         ui::style_number_label(time_labels_[slot], ui::Color::GOLD_HI);
     } else if (timer.remaining_sec <= 30) {
-        // Critical: red arc + blinking time label
         ui::anim::stop_pulse(timer_cards_[slot]);
         ui::anim::blink(time_labels_[slot], 350);
         lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(ui::Color::ERROR), LV_PART_INDICATOR);
         ui::style_number_label(time_labels_[slot], ui::Color::ERROR);
     } else if (timer.remaining_sec <= 60) {
-        // Warning: orange arc, steady (no blink yet)
         ui::anim::stop_pulse(timer_cards_[slot]);
         ui::anim::stop_blink(time_labels_[slot]);
         lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(ui::Color::WARNING), LV_PART_INDICATOR);
         ui::style_number_label(time_labels_[slot], ui::Color::WARNING);
     } else {
-        // Normal: timer's assigned colour
         ui::anim::stop_pulse(timer_cards_[slot]);
         ui::anim::stop_blink(time_labels_[slot]);
         lv_obj_set_style_arc_color(arcs_[slot], lv_color_hex(timer.color), LV_PART_INDICATOR);
@@ -208,23 +209,79 @@ void TimersApp::handle_timer_expired(int slot) {
 }
 
 void TimersApp::show_add_timer_dialog(lv_obj_t* parent) {
-    lv_obj_t* dialog = ui::create_card(parent);
-    lv_obj_set_size(dialog, 420, 480);
+    lv_obj_t* overlay = lv_obj_create(parent);
+    lv_obj_remove_style_all(overlay);
+    lv_obj_set_size(overlay, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_style_bg_color(overlay, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(overlay, LV_OPA_70, 0);
+    lv_obj_move_foreground(overlay);
+
+    lv_obj_t* dialog = ui::create_card(overlay);
+    lv_obj_set_size(dialog, 440, LV_SIZE_CONTENT);
     lv_obj_center(dialog);
     lv_obj_set_style_border_color(dialog, lv_color_hex(ui::Color::GOLD_HI), 0);
+    lv_obj_set_style_border_width(dialog, 1, 0);
     lv_obj_set_layout(dialog, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(dialog, LV_FLEX_FLOW_COLUMN);
-    lv_obj_t* label = ui::create_section_title(dialog, "Minutes");
-    (void)label;
+    lv_obj_set_style_pad_row(dialog, ui::Spacing::SM, 0);
+
+    lv_obj_t* hdr_row = lv_obj_create(dialog);
+    lv_obj_remove_style_all(hdr_row);
+    lv_obj_set_size(hdr_row, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_layout(hdr_row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(hdr_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(hdr_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_t* dlg_title = ui::create_section_title(hdr_row, "New Timer");
+    (void)dlg_title;
+    lv_obj_t* close_btn = ui::create_gold_button(hdr_row, LV_SYMBOL_CLOSE);
+    lv_obj_add_event_cb(close_btn, [](lv_event_t* e){
+        lv_obj_delete(lv_obj_get_parent(lv_obj_get_parent(lv_event_get_target_obj(e))));
+    }, LV_EVENT_CLICKED, nullptr);
+
+    // Quick-preset chips
+    lv_obj_t* presets_row = lv_obj_create(dialog);
+    lv_obj_remove_style_all(presets_row);
+    lv_obj_set_size(presets_row, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_layout(presets_row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(presets_row, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_style_pad_gap(presets_row, ui::Spacing::SM, 0);
+    for (size_t i = 0; i < kPresets.size(); ++i) {
+        lv_obj_t* btn = ui::create_gold_button(presets_row, kPresetLabels[i]);
+        lv_obj_set_user_data(btn, reinterpret_cast<void*>(static_cast<uintptr_t>(kPresets[i])));
+        lv_obj_add_event_cb(btn, [](lv_event_t* e){
+            auto* app = static_cast<TimersApp*>(lv_event_get_user_data(e));
+            const auto seconds = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(lv_obj_get_user_data(lv_event_get_target_obj(e))));
+            app->add_timer(seconds, "Timer", "⏱");
+            // Close overlay (parent of card of presets_row of btn)
+            lv_obj_delete(lv_obj_get_parent(lv_obj_get_parent(lv_obj_get_parent(lv_event_get_target_obj(e)))));
+        }, LV_EVENT_CLICKED, this);
+    }
+
+    lv_obj_t* sep = lv_label_create(dialog);
+    lv_label_set_text(sep, "Or enter minutes:");
+    lv_obj_set_style_text_color(sep, lv_color_hex(ui::Color::TEXT_HINT), 0);
+    lv_obj_set_style_text_font(sep, ui::Theme::font_small(), 0);
+
     lv_obj_t* ta = lv_textarea_create(dialog);
     lv_obj_set_width(ta, LV_PCT(100));
     lv_textarea_set_one_line(ta, true);
     lv_textarea_set_placeholder_text(ta, "15");
     lv_obj_set_style_text_font(ta, ui::Theme::font_title(), 0);
+    lv_obj_set_style_bg_color(ta, lv_color_hex(ui::Color::SURFACE_2), 0);
+    lv_obj_set_style_border_color(ta, lv_color_hex(ui::Color::GOLD_DIM), 0);
     lv_obj_set_user_data(dialog, ta);
+
     ui::create_numpad(dialog, ta, false, false);
-    lv_obj_t* add = ui::create_gold_button(dialog, "Add timer");
-    lv_obj_add_event_cb(add, dialog_add, LV_EVENT_CLICKED, this);
+
+    lv_obj_t* add_btn = ui::create_gold_button(dialog, "Add Timer");
+    lv_obj_add_event_cb(add_btn, [](lv_event_t* e){
+        auto* app = static_cast<TimersApp*>(lv_event_get_user_data(e));
+        lv_obj_t* dlg  = lv_obj_get_parent(lv_event_get_target_obj(e));
+        lv_obj_t* ta   = static_cast<lv_obj_t*>(lv_obj_get_user_data(dlg));
+        const int minutes = std::atoi(lv_textarea_get_text(ta));
+        if (minutes > 0) app->add_timer(static_cast<uint32_t>(minutes * 60), "Custom", "⏱");
+        lv_obj_delete(lv_obj_get_parent(dlg)); // delete overlay
+    }, LV_EVENT_CLICKED, this);
 }
 
 void TimersApp::on_update(float delta_sec) {

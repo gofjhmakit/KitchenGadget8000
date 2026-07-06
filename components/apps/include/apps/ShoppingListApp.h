@@ -16,16 +16,21 @@ public:
     void on_mount(lv_obj_t* parent) override;
     void on_unmount() override;
     void on_update(float delta_sec) override;
-public:
+
     void build_ui(lv_obj_t* parent);
+    void show_add_dialog();
     void load();
     void save();
     void rebuild_list();
+
     lv_obj_t* root_{nullptr};
-    lv_obj_t* list_{nullptr};
-    lv_obj_t* item_ta_{nullptr};
-    lv_obj_t* category_dd_{nullptr};
     std::vector<ShoppingItem> items_{};
+
+private:
+    static constexpr int kCatCount = 6;
+    lv_obj_t* list_{nullptr};
+    lv_obj_t* filter_btns_[kCatCount]{};
+    int active_filter_{0};
 };
 
 } // namespace apps

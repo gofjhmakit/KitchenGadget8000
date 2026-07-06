@@ -12,13 +12,18 @@ public:
     void on_mount(lv_obj_t* parent) override;
     void on_unmount() override;
     void on_update(float delta_sec) override;
-public:
-    void build_ui(lv_obj_t* parent);
+
+    void show_home(lv_obj_t* parent);
+    void show_all_apps(lv_obj_t* parent);
+
     lv_obj_t* root_{nullptr};
+
+private:
     lv_obj_t* clock_label_{nullptr};
     lv_obj_t* date_label_{nullptr};
     lv_obj_t* battery_label_{nullptr};
     lv_obj_t* wifi_label_{nullptr};
+    lv_obj_t* greeting_label_{nullptr};
 };
 
 } // namespace apps

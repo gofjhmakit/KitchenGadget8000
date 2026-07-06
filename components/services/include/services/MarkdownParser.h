@@ -11,7 +11,8 @@ struct Recipe {
     std::string time;
     int servings{0};
     std::vector<std::string> tags;
-    std::string image;
+    std::string image;       // emoji or short label from frontmatter
+    std::string image_path;  // auto-derived SPIFFS path to .jpg (may not exist on device)
     std::vector<std::string> ingredients;
     std::vector<std::string> instructions;
     std::string notes;

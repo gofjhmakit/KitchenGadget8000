@@ -12,9 +12,22 @@ public:
     void on_mount(lv_obj_t* parent) override;
     void on_unmount() override;
     void on_update(float delta_sec) override;
-public:
+
     void build_ui(lv_obj_t* parent);
+    void select(int idx);
+
     lv_obj_t* root_{nullptr};
+
+private:
+    static constexpr int kMeatCount = 5;
+    lv_obj_t* meat_btns_[kMeatCount]{};
+    lv_obj_t* detail_card_{nullptr};
+    lv_obj_t* detail_doneness_{nullptr};
+    lv_obj_t* detail_animal_{nullptr};
+    lv_obj_t* detail_temp_c_{nullptr};
+    lv_obj_t* detail_temp_f_{nullptr};
+    lv_obj_t* detail_tip_{nullptr};
+    int selected_{0};
 };
 
 } // namespace apps

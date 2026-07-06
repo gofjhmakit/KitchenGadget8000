@@ -97,7 +97,17 @@ bool MarkdownParser::parse_file(const std::string& path, Recipe& recipe) const {
     std::ostringstream ss;
     ss << file.rdbuf();
     recipe.source_path = path;
-    return parse(ss.str(), recipe);
+    if (!parse(ss.str(), recipe)) return false;
+
+    // Derive SPIFFS image path: same location + filename, .md → .jpg
+    if (path.size() > 3) {
+        const std::string suffix = ".md";
+        if (path.size() >= suffix.size() &&
+            path.compare(path.size() - suffix.size(), suffix.size(), suffix) == 0) {
+            recipe.image_path = path.substr(0, path.size() - suffix.size()) + ".jpg";
+        }
+    }
+    return true;
 }
 
 bool MarkdownParser::parse(const std::string& content, Recipe& recipe) const {

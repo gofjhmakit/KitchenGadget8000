@@ -1,6 +1,7 @@
 #include "core/AppManager.h"
 
 #include <algorithm>
+#include "core/BottomNav.h"
 #include "ui/Animations.h"
 #include "ui/Theme.h"
 
@@ -40,9 +41,26 @@ void AppManager::launch(AppId id) {
         current_->on_unmount();
     }
 
+    // Hide nav bar during screensaver; show it for every other app
+    auto& nav = BottomNav::instance();
+    const bool show_nav = (id != AppId::SCREENSAVER) && (nav.obj() != nullptr);
+    if (show_nav) {
+        nav.show();
+        nav.set_active(id);
+    } else {
+        nav.hide();
+    }
+
+    const lv_coord_t display_h = lv_display_get_vertical_resolution(lv_display_get_default());
+    const lv_coord_t display_w = lv_display_get_horizontal_resolution(lv_display_get_default());
+    const lv_coord_t container_h = (show_nav && nav.obj() != nullptr)
+        ? (display_h - BottomNav::HEIGHT)
+        : display_h;
+
     current_container_ = lv_obj_create(root_screen_);
     lv_obj_remove_style_all(current_container_);
-    lv_obj_set_size(current_container_, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_pos(current_container_, 0, 0);
+    lv_obj_set_size(current_container_, display_w, container_h);
     lv_obj_set_style_bg_color(current_container_, lv_color_hex(ui::Color::BG), 0);
     lv_obj_set_style_bg_opa(current_container_, LV_OPA_COVER, 0);
     lv_obj_set_style_pad_all(current_container_, 0, 0);
@@ -71,6 +89,8 @@ void AppManager::launch(AppId id) {
             break;
     }
     pending_transition_ = Transition::FADE;
+    // Always keep nav bar in front of the newly created app container
+    if (nav.obj() != nullptr) lv_obj_move_foreground(nav.obj());
 }
 
 void AppManager::back() {

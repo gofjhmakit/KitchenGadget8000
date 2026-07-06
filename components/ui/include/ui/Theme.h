@@ -8,6 +8,7 @@ namespace Color {
     static constexpr uint32_t BG          = 0x000000;
     static constexpr uint32_t SURFACE     = 0x0D0D0D;
     static constexpr uint32_t SURFACE_2   = 0x1A1A0D;
+    static constexpr uint32_t SURFACE_3   = 0x2A2A1A;
     static constexpr uint32_t GOLD_HI     = 0xFFD166;
     static constexpr uint32_t GOLD        = 0xC9A84C;
     static constexpr uint32_t GOLD_DIM    = 0x7A6025;
@@ -61,6 +62,7 @@ public:
     static const lv_font_t* font_title();
     static const lv_font_t* font_heading();
     static const lv_font_t* font_body();
+    static const lv_font_t* font_body_bold() { return font_heading(); } // heading size used for bold body text
     static const lv_font_t* font_label();
     static const lv_font_t* font_small();
 

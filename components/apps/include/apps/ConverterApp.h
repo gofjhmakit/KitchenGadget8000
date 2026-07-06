@@ -12,15 +12,21 @@ public:
     void on_mount(lv_obj_t* parent) override;
     void on_unmount() override;
     void on_update(float delta_sec) override;
-public:
-    enum class Category { VOLUME, WEIGHT, TEMPERATURE };
+
     void build_ui(lv_obj_t* parent);
     void update_results();
+
     lv_obj_t* root_{nullptr};
+    // Public so event callbacks can access them
     lv_obj_t* input_ta_{nullptr};
-    lv_obj_t* result_container_{nullptr};
-    lv_obj_t* result_labels_[9]{};
-    Category category_{Category::VOLUME};
+    lv_obj_t* from_dd_{nullptr};
+    lv_obj_t* to_dd_{nullptr};
+
+private:
+    lv_obj_t* from_display_{nullptr};
+    lv_obj_t* from_unit_display_{nullptr};
+    lv_obj_t* result_label_{nullptr};
+    lv_obj_t* to_unit_display_{nullptr};
 };
 
 } // namespace apps
