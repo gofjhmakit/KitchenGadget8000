@@ -92,6 +92,14 @@ void BottomNav::set_active(AppId id) {
     }
 }
 
+void BottomNav::reposition() {
+    if (!container_) return;
+    const lv_coord_t dw = lv_display_get_horizontal_resolution(lv_display_get_default());
+    const lv_coord_t dh = lv_display_get_vertical_resolution(lv_display_get_default());
+    lv_obj_set_size(container_, dw, HEIGHT);
+    lv_obj_set_pos(container_, 0, dh - HEIGHT);
+}
+
 void BottomNav::show() {
     if (container_ == nullptr) return;
     lv_obj_remove_flag(container_, LV_OBJ_FLAG_HIDDEN);

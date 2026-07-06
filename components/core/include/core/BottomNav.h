@@ -14,6 +14,7 @@ public:
     void set_active(AppId id);
     void show();
     void hide();
+    void reposition();   ///< Recalculate pos/size from current display dims (call after rotation)
     bool is_visible() const { return visible_; }
     lv_obj_t* obj() const { return container_; }
 

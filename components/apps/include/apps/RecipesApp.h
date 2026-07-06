@@ -20,15 +20,27 @@ public:
     void show_list();
     void show_detail(size_t index);
 
+    /// Fullscreen: hide BottomNav, expand container to full display height.
+    void enter_fullscreen();
+    void exit_fullscreen();
+
+    /// Portrait/landscape rotation. Portrait forces fullscreen.
+    /// Switching back to landscape also exits fullscreen.
+    void toggle_orientation();
+
     lv_obj_t* root_{nullptr};
     lv_obj_t* content_{nullptr};
     lv_obj_t* header_{nullptr};
     lv_obj_t* header_title_{nullptr};
     lv_obj_t* back_btn_{nullptr};
+
     bool step_mode_{true};
+    bool fullscreen_{false};
+    bool portrait_{false};
     size_t current_index_{0};
     size_t step_index_{0};
     std::vector<services::Recipe> recipes_{};
 };
 
 } // namespace apps
+
