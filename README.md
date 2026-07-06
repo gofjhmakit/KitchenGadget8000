@@ -2,8 +2,6 @@
 
 **Version 2 of KitchenGadget6000** — a premium, purpose-built kitchen assistant running on the Elecrow CrowPanel Advanced 9" ESP32-P4 HMI display.
 
-> Think Bang & Olufsen meets kitchen appliance. Not an Android tablet. Not a maker project. A dedicated, polished consumer-grade kitchen tool.
-
 ---
 
 ## Overview
