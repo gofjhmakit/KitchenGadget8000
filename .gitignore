@@ -72,8 +72,6 @@ Testing/
 secrets.h
 main/secrets.h
 
-# Local helper scripts
-kg8k.sh
 sdkconfig
 sdkconfig.old
 managed_components/
