@@ -1,5 +1,6 @@
 # Random
 scripts/
+__pycache__/
 
 # Prerequisites
 *.d
