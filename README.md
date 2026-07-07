@@ -161,10 +161,10 @@ Timer shortcuts are detected automatically from instruction text (e.g. "14 minut
 
 ### Prerequisites
 
-- [ESP-IDF v5.3+](https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/get-started/index.html)
-- CMake ≥ 3.16
-- Python 3.8+ (for IDF tools)
-- LVGL managed component (fetched automatically via `idf_component_manager`)
+- [ESP-IDF v5.4+](https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/get-started/index.html) installed at `~/esp/esp-idf` (or set `IDF_PATH` to your install location)
+- CMake ≥ 3.16 and Ninja (`brew install cmake ninja` on macOS)
+- Python 3.8+
+- Managed components (`esp_lcd_touch`, `lvgl`, `mdns`) are fetched automatically on first build
 
 ### Credentials
 
@@ -186,37 +186,42 @@ cp secrets.h.example main/secrets.h
 
 ### Build & Flash
 
+Use the included `kg8k.sh` helper — it handles the IDF environment, port detection, and all `idf.py` calls automatically.
+
 ```bash
-# Set up IDF environment
-. $IDF_PATH/export.sh
+# Full clean build, flash, and open serial monitor
+./kg8k.sh deploy
 
-# Configure target
-idf.py set-target esp32p4
+# Just build (incremental, no clean)
+./kg8k.sh build
 
-# (Optional) open menuconfig to adjust settings
-idf.py menuconfig
+# Build and flash (no monitor)
+./kg8k.sh build flash
 
-# Build
-idf.py build
+# Build, flash and open serial monitor
+./kg8k.sh build flash monitor
 
-# Flash and monitor (replace /dev/ttyUSB0 with your port)
-idf.py -p /dev/ttyUSB0 flash monitor
+# Open serial monitor only (device already running)
+./kg8k.sh monitor
 ```
+
+Override the serial port if auto-detection picks the wrong device:
+
+```bash
+PORT=/dev/cu.usbmodem12401 ./kg8k.sh flash monitor
+```
+
+Run `./kg8k.sh help` for the full command reference.
 
 ### SPIFFS: Uploading Recipes
 
-Recipe files need to be flashed to the SPIFFS partition. Create a SPIFFS image and flash it:
+Flash the recipe files to the SPIFFS partition with one command:
 
 ```bash
-# Install spiffsgen.py tool (part of ESP-IDF)
-python $IDF_PATH/components/spiffs/spiffsgen.py \
-    10092544 recipes/ spiffs.bin
-
-# Flash to the spiffs partition offset
-esptool.py -p /dev/ttyUSB0 write_flash 0x620000 spiffs.bin
+./kg8k.sh spiffs
 ```
 
-Or copy the recipes directory to `main/spiffs_image/` and configure the `SPIFFS_IMAGE` component in CMake to auto-generate the image.
+This builds the SPIFFS image from the `recipes/` directory and flashes it to the correct partition offset automatically.
 
 ---
 
