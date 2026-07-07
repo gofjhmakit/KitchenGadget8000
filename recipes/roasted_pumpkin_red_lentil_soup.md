@@ -2,7 +2,7 @@
 title: Roasted Pumpkin Red Lentil Soup
 time: 45 min
 servings: 4
-tags: [healthy, soup, vegan]
+tags: [soup, vegetarian, vegan]
 image: 🍲
 ---
 

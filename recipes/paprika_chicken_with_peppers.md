@@ -2,7 +2,7 @@
 title: Paprika Chicken with Peppers
 time: 35 min
 servings: 4
-tags: [main, chicken, weeknight]
+tags: [chicken]
 image: 🍗
 ---
 

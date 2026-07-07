@@ -2,7 +2,7 @@
 title: Mushroom Barley Risotto
 time: 45 min
 servings: 4
-tags: [main, vegetarian, comfort]
+tags: [vegetarian]
 image: 🍄
 ---
 

@@ -2,7 +2,7 @@
 title: Crispy Chicken Quinoa Tabouli
 time: 30 min
 servings: 4
-tags: [main, chicken, healthy]
+tags: [chicken]
 image: 🍗
 ---
 

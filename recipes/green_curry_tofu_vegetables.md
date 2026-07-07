@@ -2,7 +2,7 @@
 title: Green Curry Tofu and Vegetables
 time: 30 min
 servings: 4
-tags: [main, vegetarian, asian]
+tags: [vegetarian]
 image: 🥘
 ---
 

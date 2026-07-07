@@ -2,7 +2,7 @@
 title: Miso Glazed Salmon Rice Bowl
 time: 30 min
 servings: 4
-tags: [main, fish, bowl]
+tags: [bowl, fish]
 image: 🐟
 ---
 

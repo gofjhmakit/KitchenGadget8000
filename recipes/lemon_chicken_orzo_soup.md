@@ -2,7 +2,7 @@
 title: Lemon Chicken Orzo Soup
 time: 35 min
 servings: 4
-tags: [comfort, protein, soup]
+tags: [soup, chicken, high-protein]
 image: 🍲
 ---
 

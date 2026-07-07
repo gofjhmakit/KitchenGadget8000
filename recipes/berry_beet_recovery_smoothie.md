@@ -2,7 +2,7 @@
 title: Berry Beet Recovery Smoothie
 time: 7 min
 servings: 2
-tags: [drink, healthy, post-workout]
+tags: [drink, vegetarian, vegan, quick]
 image: 🥤
 ---
 

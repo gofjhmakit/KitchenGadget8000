@@ -2,7 +2,7 @@
 title: Baked Apples with Oat Crumble
 time: 35 min
 servings: 4
-tags: [dessert, healthy, cozy]
+tags: [dessert, vegetarian]
 image: 🍎
 ---
 

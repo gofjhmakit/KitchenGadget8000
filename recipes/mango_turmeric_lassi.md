@@ -2,7 +2,7 @@
 title: Mango Turmeric Lassi
 time: 6 min
 servings: 2
-tags: [drink, probiotic, quick]
+tags: [drink, vegetarian, quick]
 image: 🥤
 ---
 

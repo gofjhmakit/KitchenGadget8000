@@ -2,7 +2,7 @@
 title: Dark Chocolate Chia Pudding
 time: 10 min
 servings: 4
-tags: [dessert, healthy, make-ahead]
+tags: [dessert, vegetarian, quick, meal-prep]
 image: 🍫
 ---
 

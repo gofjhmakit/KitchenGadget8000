@@ -2,7 +2,7 @@
 title: Harissa Roasted Vegetable Couscous
 time: 30 min
 servings: 4
-tags: [main, vegan, quick]
+tags: [vegetarian, vegan]
 image: 🥕
 ---
 

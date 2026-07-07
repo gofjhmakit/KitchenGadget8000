@@ -2,7 +2,7 @@
 title: Garlic Yogurt Chicken Traybake
 time: 40 min
 servings: 4
-tags: [main, chicken, easy]
+tags: [chicken]
 image: 🍗
 ---
 

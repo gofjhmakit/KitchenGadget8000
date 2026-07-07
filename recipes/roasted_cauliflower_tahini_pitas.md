@@ -2,7 +2,7 @@
 title: Roasted Cauliflower Tahini Pitas
 time: 30 min
 servings: 4
-tags: [main, vegetarian, street-food]
+tags: [vegetarian]
 image: 🥙
 ---
 

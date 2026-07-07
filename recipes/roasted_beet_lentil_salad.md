@@ -2,7 +2,7 @@
 title: Roasted Beet Lentil Salad
 time: 40 min
 servings: 4
-tags: [healthy, meal-prep, vegetarian]
+tags: [salad, vegetarian, vegan, meal-prep]
 image: 🥗
 ---
 

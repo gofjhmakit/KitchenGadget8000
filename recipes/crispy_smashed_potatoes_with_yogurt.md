@@ -2,7 +2,7 @@
 title: Crispy Smashed Potatoes with Yogurt
 time: 40 min
 servings: 4
-tags: [side, crispy, vegetarian]
+tags: [side, vegetarian]
 image: 🥔
 ---
 

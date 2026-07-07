@@ -2,7 +2,7 @@
 title: Spinach Feta Egg Muffins
 time: 25 min
 servings: 6
-tags: [breakfast, protein, gluten-free]
+tags: [breakfast, vegetarian, gluten-free, high-protein]
 image: 🍳
 ---
 

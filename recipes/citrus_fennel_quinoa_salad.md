@@ -2,7 +2,7 @@
 title: Citrus Fennel Quinoa Salad
 time: 25 min
 servings: 4
-tags: [healthy, quick, vegetarian]
+tags: [salad, vegetarian]
 image: 🥗
 ---
 

@@ -2,7 +2,7 @@
 title: Zucchini Fritters with Dill
 time: 25 min
 servings: 4
-tags: [side, vegetarian, summer]
+tags: [side, vegetarian]
 image: 🥒
 ---
 

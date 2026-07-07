@@ -2,7 +2,7 @@
 title: Garlic Green Beans with Almonds
 time: 15 min
 servings: 4
-tags: [side, healthy, quick]
+tags: [side, vegetarian, vegan, quick]
 image: 🥬
 ---
 

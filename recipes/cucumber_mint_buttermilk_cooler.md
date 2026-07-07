@@ -2,7 +2,7 @@
 title: Cucumber Mint Buttermilk Cooler
 time: 5 min
 servings: 2
-tags: [drink, refreshing, savory]
+tags: [drink, vegetarian, quick]
 image: 🥤
 ---
 

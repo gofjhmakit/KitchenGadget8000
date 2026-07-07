@@ -2,7 +2,7 @@
 title: Cod with Tomato Olive Braise
 time: 30 min
 servings: 4
-tags: [main, fish, mediterranean]
+tags: [stew, fish]
 image: 🐟
 ---
 

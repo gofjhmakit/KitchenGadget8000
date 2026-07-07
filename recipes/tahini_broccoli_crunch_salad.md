@@ -2,7 +2,7 @@
 title: Tahini Broccoli Crunch Salad
 time: 20 min
 servings: 4
-tags: [healthy, fiber, vegetarian]
+tags: [salad, vegetarian, vegan, quick]
 image: 🥗
 ---
 

@@ -2,7 +2,7 @@
 title: Green Goddess Chicken Salad
 time: 20 min
 servings: 4
-tags: [healthy, protein, gluten-free]
+tags: [salad, gluten-free, chicken, quick, high-protein]
 image: 🥗
 ---
 

@@ -2,7 +2,7 @@
 title: Warm Halloumi Peach Salad
 time: 18 min
 servings: 2
-tags: [summer, vegetarian, premium]
+tags: [salad, vegetarian, quick]
 image: 🥗
 ---
 

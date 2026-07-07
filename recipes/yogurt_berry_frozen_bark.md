@@ -2,7 +2,7 @@
 title: Yogurt Berry Frozen Bark
 time: 15 min
 servings: 6
-tags: [dessert, healthy, summer]
+tags: [dessert, vegetarian, quick]
 image: 🍓
 ---
 

@@ -2,7 +2,7 @@
 title: Green Kiwi Spinach Smoothie
 time: 8 min
 servings: 2
-tags: [drink, healthy, quick]
+tags: [drink, vegetarian, vegan, quick]
 image: 🥤
 ---
 

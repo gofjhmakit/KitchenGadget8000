@@ -2,7 +2,7 @@
 title: Baked Falafel Bowls with Herb Sauce
 time: 35 min
 servings: 4
-tags: [main, vegetarian, meal-prep]
+tags: [bowl, vegetarian, meal-prep]
 image: 🥙
 ---
 

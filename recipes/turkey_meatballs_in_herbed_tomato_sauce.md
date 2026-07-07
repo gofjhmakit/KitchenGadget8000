@@ -2,7 +2,7 @@
 title: Turkey Meatballs in Herbed Tomato Sauce
 time: 35 min
 servings: 4
-tags: [main, protein, family]
+tags: [chicken, high-protein]
 image: 🍝
 ---
 

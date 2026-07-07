@@ -2,7 +2,7 @@
 title: Roasted Carrot Hummus Dip
 time: 30 min
 servings: 4
-tags: [snack, healthy, vegetarian]
+tags: [snack, vegetarian, vegan]
 image: 🥕
 ---
 

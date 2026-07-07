@@ -2,7 +2,7 @@
 title: Baked Oatmeal with Pear and Hazelnut
 time: 35 min
 servings: 6
-tags: [breakfast, make-ahead, vegetarian]
+tags: [breakfast, vegetarian, meal-prep]
 image: 🥣
 ---
 

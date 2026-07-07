@@ -2,7 +2,7 @@
 title: Miso Mushroom Noodle Soup
 time: 20 min
 servings: 2
-tags: [quick, umami, vegetarian]
+tags: [soup, vegetarian, vegan, quick]
 image: 🍲
 ---
 

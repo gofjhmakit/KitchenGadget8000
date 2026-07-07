@@ -2,7 +2,7 @@
 title: Butter Bean Tomato Basil Stew
 time: 25 min
 servings: 4
-tags: [main, vegetarian, comfort]
+tags: [stew, vegetarian]
 image: 🍛
 ---
 

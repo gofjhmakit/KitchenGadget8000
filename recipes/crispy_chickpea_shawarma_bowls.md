@@ -2,7 +2,7 @@
 title: Crispy Chickpea Shawarma Bowls
 time: 28 min
 servings: 4
-tags: [main, vegan, spiced]
+tags: [bowl, vegetarian]
 image: 🥣
 ---
 

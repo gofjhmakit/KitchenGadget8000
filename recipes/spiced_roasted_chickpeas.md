@@ -2,7 +2,7 @@
 title: Spiced Roasted Chickpeas
 time: 25 min
 servings: 4
-tags: [snack, vegan, crunchy]
+tags: [snack, vegetarian, vegan]
 image: 🥜
 ---
 

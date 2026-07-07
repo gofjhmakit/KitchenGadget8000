@@ -2,7 +2,7 @@
 title: Avocado Herb Cottage Toast
 time: 12 min
 servings: 2
-tags: [breakfast, quick, vegetarian]
+tags: [breakfast, vegetarian, quick]
 image: 🍞
 ---
 

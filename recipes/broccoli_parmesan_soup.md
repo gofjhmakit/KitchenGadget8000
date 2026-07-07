@@ -2,7 +2,7 @@
 title: Broccoli Parmesan Soup
 time: 30 min
 servings: 4
-tags: [healthy, soup, vegetarian]
+tags: [soup, vegetarian]
 image: 🍲
 ---
 

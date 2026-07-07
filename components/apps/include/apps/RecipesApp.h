@@ -1,6 +1,7 @@
 #pragma once
 #include "core/AppManager.h"
 #include "lvgl.h"
+#include <string>
 #include <vector>
 #include "services/MarkdownParser.h"
 
@@ -18,6 +19,7 @@ public:
     void build_ui(lv_obj_t* parent);
     void load_recipes();
     void show_list();
+    void show_tag_bar();
     void show_detail(size_t index);
 
     /// Fullscreen: hide BottomNav, expand container to full display height.
@@ -39,8 +41,11 @@ public:
     bool portrait_{false};
     size_t current_index_{0};
     size_t step_index_{0};
+    std::string active_tag_{};
     std::vector<services::Recipe> recipes_{};
+    std::vector<std::string> all_tags_{};
+    lv_obj_t* tag_bar_{nullptr};
+    lv_obj_t* count_label_{nullptr};
 };
 
 } // namespace apps
-

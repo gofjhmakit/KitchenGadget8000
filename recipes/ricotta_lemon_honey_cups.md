@@ -2,7 +2,7 @@
 title: Ricotta Lemon Honey Cups
 time: 10 min
 servings: 4
-tags: [dessert, quick, protein]
+tags: [dessert, vegetarian, quick, high-protein]
 image: 🍋
 ---
 

@@ -1,6 +1,7 @@
 #include "apps/RecipesApp.h"
 
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include "apps/TimersApp.h"
 #include "core/AppManager.h"
@@ -13,6 +14,55 @@
 
 namespace apps {
 namespace {
+
+constexpr std::array<const char*, 18> kPreferredTagOrder = {
+    "breakfast", "soup", "stew", "salad", "bowl", "side", "dessert", "snack",
+    "drink", "vegetarian", "vegan", "gluten-free", "chicken", "fish", "beef",
+    "quick", "high-protein", "meal-prep"
+};
+
+constexpr size_t kMaxCardTags = 3;
+
+bool recipe_has_tag(const services::Recipe& recipe, const std::string& tag) {
+    return std::find(recipe.tags.begin(), recipe.tags.end(), tag) != recipe.tags.end();
+}
+
+lv_obj_t* create_filter_pill(lv_obj_t* parent, const char* text, bool active) {
+    lv_obj_t* pill = lv_button_create(parent);
+    lv_obj_set_style_radius(pill, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_pad_ver(pill, 6, 0);
+    lv_obj_set_style_pad_hor(pill, 12, 0);
+    lv_obj_set_style_shadow_width(pill, 0, 0);
+    lv_obj_set_style_border_width(pill, active ? 0 : 1, 0);
+    lv_obj_set_style_border_color(pill, lv_color_hex(ui::Color::GOLD_FAINT), 0);
+    lv_obj_set_style_bg_color(pill, lv_color_hex(active ? ui::Color::GOLD_HI : ui::Color::BG), 0);
+    lv_obj_set_style_bg_opa(pill, active ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+
+    lv_obj_t* label = lv_label_create(pill);
+    lv_label_set_text(label, text);
+    lv_obj_set_style_text_font(label, ui::Theme::font_small(), 0);
+    lv_obj_set_style_text_color(label,
+        lv_color_hex(active ? ui::Color::BG : ui::Color::GOLD_DIM), 0);
+    lv_obj_center(label);
+    return pill;
+}
+
+void add_card_tag_pill(lv_obj_t* parent, const std::string& tag) {
+    lv_obj_t* pill = lv_obj_create(parent);
+    lv_obj_remove_style_all(pill);
+    lv_obj_set_size(pill, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_color(pill, lv_color_hex(ui::Color::GOLD_FAINT), 0);
+    lv_obj_set_style_bg_opa(pill, LV_OPA_COVER, 0);
+    lv_obj_set_style_radius(pill, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_pad_ver(pill, 4, 0);
+    lv_obj_set_style_pad_hor(pill, 8, 0);
+
+    lv_obj_t* label = lv_label_create(pill);
+    lv_label_set_text(label, tag.c_str());
+    lv_obj_set_style_text_font(label, ui::Theme::font_small(), 0);
+    lv_obj_set_style_text_color(label, lv_color_hex(ui::Color::GOLD), 0);
+    lv_obj_center(label);
+}
 
 void timer_from_text(lv_event_t* e) {
     const uint32_t seconds = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(
@@ -181,6 +231,7 @@ void RecipesApp::build_ui(lv_obj_t* parent) {
 
 void RecipesApp::load_recipes() {
     recipes_.clear();
+    all_tags_.clear();
     const auto files = core::Storage::instance().list_files("/recipes", ".md");
     for (const auto& file : files) {
         services::Recipe recipe;
@@ -189,9 +240,65 @@ void RecipesApp::load_recipes() {
             recipes_.push_back(recipe);
         }
     }
+
+    std::vector<std::string> unique_tags;
+    for (const auto& recipe : recipes_) {
+        for (const auto& tag : recipe.tags) {
+            if (std::find(unique_tags.begin(), unique_tags.end(), tag) == unique_tags.end()) {
+                unique_tags.push_back(tag);
+            }
+        }
+    }
+
+    for (const char* preferred_tag : kPreferredTagOrder) {
+        if (std::find(unique_tags.begin(), unique_tags.end(), preferred_tag) != unique_tags.end()) {
+            all_tags_.emplace_back(preferred_tag);
+        }
+    }
+
+    std::vector<std::string> extra_tags;
+    for (const auto& tag : unique_tags) {
+        if (std::find(all_tags_.begin(), all_tags_.end(), tag) == all_tags_.end()) {
+            extra_tags.push_back(tag);
+        }
+    }
+    std::sort(extra_tags.begin(), extra_tags.end());
+    all_tags_.insert(all_tags_.end(), extra_tags.begin(), extra_tags.end());
 }
 
 // ── List view ────────────────────────────────────────────────────────────────
+
+void RecipesApp::show_tag_bar() {
+    if (!content_) return;
+
+    tag_bar_ = lv_obj_create(content_);
+    lv_obj_remove_style_all(tag_bar_);
+    lv_obj_set_size(tag_bar_, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_layout(tag_bar_, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(tag_bar_, LV_FLEX_FLOW_ROW);
+    lv_obj_set_style_bg_color(tag_bar_, lv_color_hex(ui::Color::BG), 0);
+    lv_obj_set_style_bg_opa(tag_bar_, LV_OPA_COVER, 0);
+    lv_obj_set_style_pad_gap(tag_bar_, ui::Spacing::SM, 0);
+    lv_obj_set_style_pad_bottom(tag_bar_, ui::Spacing::XS, 0);
+    lv_obj_set_scroll_dir(tag_bar_, LV_DIR_HOR);
+    lv_obj_set_scrollbar_mode(tag_bar_, LV_SCROLLBAR_MODE_OFF);
+
+    auto add_filter = [this](const char* text, bool active, const std::string* tag_value) {
+        lv_obj_t* pill = create_filter_pill(tag_bar_, text, active);
+        lv_obj_set_user_data(pill, const_cast<std::string*>(tag_value));
+        lv_obj_add_event_cb(pill, [](lv_event_t* e) {
+            auto* app = static_cast<RecipesApp*>(lv_event_get_user_data(e));
+            auto* tag = static_cast<const std::string*>(lv_obj_get_user_data(lv_event_get_target_obj(e)));
+            app->active_tag_ = tag ? *tag : std::string{};
+            app->show_list();
+        }, LV_EVENT_CLICKED, this);
+    };
+
+    add_filter("All", active_tag_.empty(), nullptr);
+    for (const auto& tag : all_tags_) {
+        add_filter(tag.c_str(), active_tag_ == tag, &tag);
+    }
+}
 
 void RecipesApp::show_list() {
     // Restore landscape & nav when returning to list
@@ -212,6 +319,8 @@ void RecipesApp::show_list() {
 
     step_index_ = 0;
     if (!content_) return;
+    tag_bar_ = nullptr;
+    count_label_ = nullptr;
 
     // Hide back/actions, show plain title
     lv_obj_add_flag(back_btn_, LV_OBJ_FLAG_HIDDEN);
@@ -225,8 +334,8 @@ void RecipesApp::show_list() {
 
     lv_obj_clean(content_);
     lv_obj_set_layout(content_, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(content_, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_style_pad_gap(content_, ui::Spacing::MD, 0);
+    lv_obj_set_flex_flow(content_, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_pad_row(content_, ui::Spacing::SM, 0);
     lv_obj_set_scroll_dir(content_, LV_DIR_VER);
 
     if (recipes_.empty()) {
@@ -237,15 +346,48 @@ void RecipesApp::show_list() {
         return;
     }
 
+    std::vector<size_t> visible_indices;
+    visible_indices.reserve(recipes_.size());
     for (size_t i = 0; i < recipes_.size(); ++i) {
-        const auto& r = recipes_[i];
-        lv_obj_t* card = ui::create_card(content_);
+        const auto& recipe = recipes_[i];
+        if (!active_tag_.empty() && !recipe_has_tag(recipe, active_tag_)) continue;
+        visible_indices.push_back(i);
+    }
+
+    show_tag_bar();
+
+    count_label_ = lv_label_create(content_);
+    char count_text[64];
+    if (active_tag_.empty()) {
+        std::snprintf(count_text, sizeof(count_text), "%u recipes",
+                      static_cast<unsigned>(visible_indices.size()));
+    } else {
+        std::snprintf(count_text, sizeof(count_text), "Showing %u of %u",
+                      static_cast<unsigned>(visible_indices.size()),
+                      static_cast<unsigned>(recipes_.size()));
+    }
+    lv_label_set_text(count_label_, count_text);
+    lv_obj_set_width(count_label_, LV_PCT(100));
+    lv_obj_set_style_text_font(count_label_, ui::Theme::font_small(), 0);
+    lv_obj_set_style_text_color(count_label_, lv_color_hex(ui::Color::TEXT_SEC), 0);
+    lv_obj_set_style_text_align(count_label_, LV_TEXT_ALIGN_RIGHT, 0);
+
+    lv_obj_t* grid = lv_obj_create(content_);
+    lv_obj_remove_style_all(grid);
+    lv_obj_set_size(grid, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_layout(grid, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(grid, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_style_pad_gap(grid, ui::Spacing::MD, 0);
+
+    for (size_t recipe_index : visible_indices) {
+        const auto& r = recipes_[recipe_index];
+        lv_obj_t* card = ui::create_card(grid);
         lv_obj_set_size(card, 300, LV_SIZE_CONTENT);
         lv_obj_set_layout(card, LV_LAYOUT_FLEX);
         lv_obj_set_flex_flow(card, LV_FLEX_FLOW_COLUMN);
         lv_obj_set_style_pad_row(card, ui::Spacing::SM, 0);
         lv_obj_add_flag(card, LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_set_user_data(card, reinterpret_cast<void*>(static_cast<uintptr_t>(i)));
+        lv_obj_set_user_data(card, reinterpret_cast<void*>(static_cast<uintptr_t>(recipe_index)));
         lv_obj_add_event_cb(card, [](lv_event_t* e){
             auto* app = static_cast<RecipesApp*>(lv_event_get_user_data(e));
             const size_t idx = static_cast<size_t>(reinterpret_cast<uintptr_t>(
@@ -268,6 +410,26 @@ void RecipesApp::show_list() {
         lv_label_set_text(meta_lbl, meta);
         lv_obj_set_style_text_font(meta_lbl, ui::Theme::font_small(), 0);
         lv_obj_set_style_text_color(meta_lbl, lv_color_hex(ui::Color::TEXT_SEC), 0);
+
+        if (!r.tags.empty()) {
+            lv_obj_t* tag_row = lv_obj_create(card);
+            lv_obj_remove_style_all(tag_row);
+            lv_obj_set_width(tag_row, LV_PCT(100));
+            lv_obj_set_layout(tag_row, LV_LAYOUT_FLEX);
+            lv_obj_set_flex_flow(tag_row, LV_FLEX_FLOW_ROW);
+            lv_obj_set_style_pad_gap(tag_row, ui::Spacing::XS, 0);
+
+            for (size_t tag_index = 0; tag_index < std::min(r.tags.size(), kMaxCardTags); ++tag_index) {
+                add_card_tag_pill(tag_row, r.tags[tag_index]);
+            }
+        }
+    }
+
+    if (visible_indices.empty()) {
+        lv_obj_t* empty_lbl = lv_label_create(grid);
+        lv_label_set_text(empty_lbl, "No recipes match this tag.");
+        lv_obj_set_style_text_font(empty_lbl, ui::Theme::font_body(), 0);
+        lv_obj_set_style_text_color(empty_lbl, lv_color_hex(ui::Color::TEXT_SEC), 0);
     }
 }
 
@@ -450,6 +612,10 @@ void RecipesApp::on_unmount() {
     header_       = nullptr;
     back_btn_     = nullptr;
     header_title_ = nullptr;
+    tag_bar_      = nullptr;
+    count_label_  = nullptr;
+    active_tag_.clear();
+    all_tags_.clear();
 }
 
 void RecipesApp::on_update(float) {}

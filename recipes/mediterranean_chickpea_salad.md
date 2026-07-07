@@ -2,7 +2,7 @@
 title: Mediterranean Chickpea Salad
 time: 15 min
 servings: 4
-tags: [healthy, quick, vegan]
+tags: [salad, vegetarian, vegan, quick]
 image: 🥗
 ---
 

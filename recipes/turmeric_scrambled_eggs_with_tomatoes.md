@@ -2,7 +2,7 @@
 title: Turmeric Scrambled Eggs with Tomatoes
 time: 15 min
 servings: 2
-tags: [breakfast, protein, quick]
+tags: [breakfast, vegetarian, quick, high-protein]
 image: 🍳
 ---
 

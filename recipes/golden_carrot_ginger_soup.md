@@ -2,7 +2,7 @@
 title: Golden Carrot Ginger Soup
 time: 35 min
 servings: 4
-tags: [healthy, soup, vegan]
+tags: [soup, vegetarian]
 image: 🍲
 ---
 

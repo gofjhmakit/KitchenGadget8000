@@ -2,7 +2,7 @@
 title: Sheet Pan Gnocchi with Sausage and Broccoli
 time: 30 min
 servings: 4
-tags: [main, easy, family]
+tags: [chicken]
 image: 🍽
 ---
 

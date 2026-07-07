@@ -2,7 +2,7 @@
 title: Sweet Potato Black Bean Tacos
 time: 30 min
 servings: 4
-tags: [main, vegetarian, quick]
+tags: [vegetarian, vegan]
 image: 🌮
 ---
 

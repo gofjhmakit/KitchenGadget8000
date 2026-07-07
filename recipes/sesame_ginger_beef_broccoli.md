@@ -2,7 +2,7 @@
 title: Sesame Ginger Beef and Broccoli
 time: 20 min
 servings: 4
-tags: [main, quick, beef]
+tags: [beef, quick]
 image: 🥩
 ---
 

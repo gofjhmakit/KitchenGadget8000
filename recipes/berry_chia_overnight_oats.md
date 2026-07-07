@@ -2,7 +2,7 @@
 title: Berry Chia Overnight Oats
 time: 10 min
 servings: 2
-tags: [breakfast, meal-prep, vegetarian]
+tags: [breakfast, vegetarian, quick, meal-prep]
 image: 🥣
 ---
 

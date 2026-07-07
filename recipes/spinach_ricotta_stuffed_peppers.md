@@ -2,7 +2,7 @@
 title: Spinach Ricotta Stuffed Peppers
 time: 40 min
 servings: 4
-tags: [main, vegetarian, bake]
+tags: [vegetarian]
 image: 🫑
 ---
 

@@ -2,7 +2,7 @@
 title: Herb Roasted Salmon with Asparagus
 time: 25 min
 servings: 4
-tags: [main, fish, healthy]
+tags: [fish]
 image: 🐟
 ---
 

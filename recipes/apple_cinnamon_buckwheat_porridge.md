@@ -2,7 +2,7 @@
 title: Apple Cinnamon Buckwheat Porridge
 time: 20 min
 servings: 2
-tags: [breakfast, whole-grain, vegetarian]
+tags: [breakfast, vegetarian, quick]
 image: 🥣
 ---
 

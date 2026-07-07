@@ -2,7 +2,7 @@
 title: Ginger Scallion Poached Chicken
 time: 35 min
 servings: 4
-tags: [main, chicken, light]
+tags: [chicken]
 image: 🍗
 ---
 
