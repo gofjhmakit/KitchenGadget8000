@@ -2,6 +2,8 @@
 
 **Version 2 of KitchenGadget6000** — a premium, purpose-built kitchen assistant running on the Elecrow CrowPanel Advanced 9" ESP32-P4 HMI display.
 
+![Hallucinated garbage that was used as base for UI.](/kg8k_ui.png)
+
 ---
 
 ## Overview
