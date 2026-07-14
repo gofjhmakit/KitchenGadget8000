@@ -13,6 +13,7 @@ implementation notes**.
 ## 0. Short ideas:
 
 - Add weather to screensaver (use Muurame, Finland as default location).
+- Add beautiful and stylish electricity price chart to screensaver too (Finnish electricity price, copy [from Disobey badge project](https://github.com/gofjhmakit/disobey_electricity_badge)).  
 
 ## 1. Meal Planner (Weekly)
 
