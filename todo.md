@@ -10,6 +10,9 @@ Each section includes: **Purpose**, **AppId**, **Data model**, **SPIFFS persiste
 implementation notes**.
 
 ---
+## 0. Short ideas:
+
+- Add weather to screensaver (use Muurame, Finland as default location).
 
 ## 1. Meal Planner (Weekly)
 
