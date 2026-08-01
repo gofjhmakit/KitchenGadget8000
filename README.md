@@ -27,6 +27,11 @@ Everything from [KitchenGadget6000](https://github.com/gofjhmakit/KitchenGadget6
 | Power | USB-C charging dock + internal LiPo (PH2.0-2P, 3.7 V, ~430 mA charging) |
 | Storage | Internal flash + SPIFFS for recipes and user data |
 
+> ⚠️ **Early ESP32-P4 engineering samples (chip rev v1.x / ECO2):**
+> this project includes `sdkconfig.defaults` compatibility overrides for rev v1.3
+> samples (bootloader chip revision range + 360 MHz CPU cap). Production silicon
+> (rev v3.x / ECO3) is still the recommended hardware for new builds.
+
 ---
 
 ## Software Architecture
@@ -163,10 +168,14 @@ Timer shortcuts are detected automatically from instruction text (e.g. "14 minut
 
 ### Prerequisites
 
-- [ESP-IDF v5.4+](https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/get-started/index.html) installed at `~/esp/esp-idf` (or set `IDF_PATH` to your install location)
+- [ESP-IDF v5.5+](https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/get-started/index.html) installed at `~/esp/esp-idf` (or set `IDF_PATH` to your install location)
 - CMake ≥ 3.16 and Ninja (`brew install cmake ninja` on macOS)
 - Python 3.8+
 - Managed components (`esp_lcd_touch`, `lvgl`, `mdns`) are fetched automatically on first build
+
+For ESP32-P4 rev v1.x (ECO2) engineering samples, keep using the defaults in
+`sdkconfig.defaults` from this repository; they relax the default chip revision
+requirements and cap CPU at 360 MHz for stability on pre-production silicon.
 
 ### Credentials
 
