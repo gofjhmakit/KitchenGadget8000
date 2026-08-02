@@ -177,7 +177,7 @@ cmd_flash() {
     [[ -z "${PORT:-}" ]] && detect_port
     section "Flash  →  $PORT"; _section_start
     log_info "Writing firmware to device…"
-    idf.py -p "$PORT" flash
+    idf.py -p "$PORT" -b "${BAUD_RATE:-115200}" flash
     log_ok "Flash complete"
     section_done
 }
