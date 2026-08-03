@@ -5,9 +5,10 @@
 #include "esp_http_client.h"
 #include "esp_log.h"
 #include "esp_netif.h"
-// esp_wifi.h is only available when a WiFi driver is present (native or remote).
-// On ESP32-P4 without esp_wifi_remote, CONFIG_ESP_WIFI_ENABLED is not set.
-#ifdef CONFIG_ESP_WIFI_ENABLED
+// esp_wifi.h is available when native WiFi (CONFIG_ESP_WIFI_ENABLED) or the
+// esp_wifi_remote shim (CONFIG_ESP_WIFI_REMOTE_ENABLED) is present.
+#if defined(CONFIG_ESP_WIFI_ENABLED) || defined(CONFIG_ESP_WIFI_REMOTE_ENABLED)
+#  define KG8K_WIFI_AVAILABLE 1
 #  include "esp_wifi.h"
 #endif
 
@@ -15,7 +16,7 @@ namespace core {
 namespace {
 constexpr const char* TAG = "Network";
 
-#ifdef CONFIG_ESP_WIFI_ENABLED
+#ifdef KG8K_WIFI_AVAILABLE
 void wifi_event_handler(void* arg, esp_event_base_t base, int32_t id, void* data) {
     auto& self = Network::instance();
     if (base == WIFI_EVENT && id == WIFI_EVENT_STA_START) {
@@ -63,7 +64,7 @@ void Network::init() {
     if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) {
         ESP_LOGE(TAG, "esp_event_loop_create_default failed: %s", esp_err_to_name(err)); return;
     }
-#ifdef CONFIG_ESP_WIFI_ENABLED
+#ifdef KG8K_WIFI_AVAILABLE
     esp_netif_create_default_wifi_sta();
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     err = esp_wifi_init(&cfg);
@@ -86,7 +87,7 @@ void Network::init() {
 }
 
 void Network::connect(const char* ssid, const char* password) {
-#ifdef CONFIG_ESP_WIFI_ENABLED
+#ifdef KG8K_WIFI_AVAILABLE
     if (!initialized_) {
         init();
         if (!initialized_) return;
@@ -112,7 +113,7 @@ void Network::connect(const char* ssid, const char* password) {
 }
 
 void Network::disconnect() {
-#ifdef CONFIG_ESP_WIFI_ENABLED
+#ifdef KG8K_WIFI_AVAILABLE
     esp_wifi_disconnect();
     if (wifi_started_) {
         esp_wifi_stop();
@@ -123,7 +124,7 @@ void Network::disconnect() {
 }
 
 int8_t Network::rssi() const {
-#ifdef CONFIG_ESP_WIFI_ENABLED
+#ifdef KG8K_WIFI_AVAILABLE
     wifi_ap_record_t ap{};
     if (esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
         return ap.rssi;

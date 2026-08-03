@@ -75,7 +75,16 @@ bool Settings::load() {
         save();
         return false;
     }
-    // Migration: if WiFi SSID is empty or still has the placeholder, override with secrets.h
+    // Migration: fix clearly invalid values that got saved during earlier buggy sessions
+    bool needs_save = false;
+    if (settings_.alarm_volume == 0) {
+        settings_.alarm_volume = 75;
+        needs_save = true;
+    }
+    if (settings_.backlight == 0) {
+        settings_.backlight = 200;
+        needs_save = true;
+    }
 #ifdef WIFI_SSID
     const bool is_placeholder = (std::strcmp(settings_.wifi_ssid, "your_network_name") == 0 ||
                                   std::strcmp(settings_.wifi_ssid, "YOUR_WIFI_SSID") == 0);
@@ -84,10 +93,11 @@ bool Settings::load() {
 #ifdef WIFI_PASSWORD
         std::strncpy(settings_.wifi_password, WIFI_PASSWORD, sizeof(settings_.wifi_password) - 1);
 #endif
-        save();
+        needs_save = true;
         ESP_LOGI(TAG, "WiFi credentials migrated from secrets.h -> %s", settings_.wifi_ssid);
     }
 #endif
+    if (needs_save) save();
     return true;
 }
 

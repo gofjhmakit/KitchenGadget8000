@@ -527,42 +527,62 @@ void LauncherApp::show_settings_overlay() {
     lv_obj_set_flex_flow(vol_row, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(vol_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(vol_row, ui::Spacing::SM, 0);
+    lv_obj_remove_flag(vol_row, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(vol_row, LV_OBJ_FLAG_GESTURE_BUBBLE);
     lv_obj_t* vol_lbl = lv_label_create(vol_row);
     lv_label_set_text(vol_lbl, "Volume");
     lv_obj_set_style_text_color(vol_lbl, lv_color_hex(ui::Color::TEXT_SEC), 0);
     lv_obj_set_style_text_font(vol_lbl, ui::Theme::font_small(), 0);
     lv_obj_set_width(vol_lbl, 70);
-    lv_obj_t* slider = lv_slider_create(vol_row);
-    lv_obj_set_flex_grow(slider, 1);
-    lv_obj_set_height(slider, 24);  // explicit height prevents flex missize
-    lv_slider_set_range(slider, 0, 100);
-    lv_slider_set_value(slider, cfg.alarm_volume, LV_ANIM_OFF);
-    lv_obj_set_style_bg_color(slider, lv_color_hex(ui::Color::SURFACE_2), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(slider, lv_color_hex(ui::Color::GOLD), LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(slider, lv_color_hex(ui::Color::GOLD_HI), LV_PART_KNOB);
-    // Prevent horizontal drag from bubbling up as a scroll gesture on the panel
-    lv_obj_remove_flag(slider, LV_OBJ_FLAG_GESTURE_BUBBLE);
-    // Update the in-memory value on every drag tick (cheap), but only write NVS on release
-    // (NVS flash writes are slow and cause watchdog resets if called ~60x/sec during drag)
-    lv_obj_add_event_cb(slider, [](lv_event_t* e) {
-        core::Settings::instance().get().alarm_volume = static_cast<uint8_t>(lv_slider_get_value(lv_event_get_target_obj(e)));
-    }, LV_EVENT_VALUE_CHANGED, nullptr);
-    lv_obj_add_event_cb(slider, [](lv_event_t* e) {
-        core::Settings::instance().save();
-    }, LV_EVENT_RELEASED, nullptr);
+
     lv_obj_t* vol_val = lv_label_create(vol_row);
     lv_obj_set_style_text_color(vol_val, lv_color_hex(ui::Color::GOLD), 0);
     lv_obj_set_style_text_font(vol_val, ui::Theme::font_small(), 0);
-    lv_obj_set_width(vol_val, 40);
+
+    auto make_vol_btn = [](lv_obj_t* parent, const char* text) {
+        lv_obj_t* btn = lv_button_create(parent);
+        lv_obj_set_style_radius(btn, 20, 0);
+        lv_obj_set_style_pad_hor(btn, 16, 0);
+        lv_obj_set_style_pad_ver(btn, 8, 0);
+        lv_obj_set_style_bg_color(btn, lv_color_hex(ui::Color::SURFACE_2), 0);
+        lv_obj_set_style_border_color(btn, lv_color_hex(ui::Color::GOLD_DIM), 0);
+        lv_obj_set_style_border_width(btn, 1, 0);
+        lv_obj_t* l = lv_label_create(btn);
+        lv_label_set_text(l, text);
+        lv_obj_set_style_text_color(l, lv_color_hex(ui::Color::GOLD), 0);
+        lv_obj_set_style_text_font(l, ui::Theme::font_small(), 0);
+        return btn;
+    };
+
+    lv_obj_t* vol_minus = make_vol_btn(vol_row, "-");
+    lv_obj_move_to_index(vol_minus, 1);  // between label and value
+    lv_obj_t* vol_plus = make_vol_btn(vol_row, "+");
+
     char vol_str[8];
     std::snprintf(vol_str, sizeof(vol_str), "%d%%", cfg.alarm_volume);
     lv_label_set_text(vol_val, vol_str);
-    lv_obj_add_event_cb(slider, [](lv_event_t* e) {
-        lv_obj_t* lbl_ = static_cast<lv_obj_t*>(lv_event_get_user_data(e));
-        char s[8];
-        std::snprintf(s, sizeof(s), "%d%%", static_cast<int>(lv_slider_get_value(lv_event_get_target_obj(e))));
-        lv_label_set_text(lbl_, s);
-    }, LV_EVENT_VALUE_CHANGED, vol_val);
+    lv_obj_set_style_pad_hor(vol_val, 12, 0);
+
+    auto vol_step_cb = [](lv_event_t* e) {
+        const int delta = static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
+        auto& cfg_ref = core::Settings::instance().get();
+        int v = static_cast<int>(cfg_ref.alarm_volume) + delta;
+        if (v < 0) v = 0;
+        if (v > 100) v = 100;
+        cfg_ref.alarm_volume = static_cast<uint8_t>(v);
+        core::Settings::instance().save();
+        lv_obj_t* btn = lv_event_get_target_obj(e);
+        lv_obj_t* row = lv_obj_get_parent(btn);
+        // Order in row: label(0), minus(1), value(2), plus(3)
+        lv_obj_t* val_lbl = lv_obj_get_child(row, 2);
+        if (val_lbl != nullptr) {
+            char s[8];
+            std::snprintf(s, sizeof(s), "%d%%", v);
+            lv_label_set_text(val_lbl, s);
+        }
+    };
+    lv_obj_add_event_cb(vol_minus, vol_step_cb, LV_EVENT_CLICKED, reinterpret_cast<void*>(static_cast<intptr_t>(-5)));
+    lv_obj_add_event_cb(vol_plus, vol_step_cb, LV_EVENT_CLICKED, reinterpret_cast<void*>(static_cast<intptr_t>(5)));
 }
 
 void LauncherApp::on_unmount() {
