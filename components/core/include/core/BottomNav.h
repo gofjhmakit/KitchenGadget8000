@@ -24,11 +24,11 @@ public:
         const char* label;
     };
     static constexpr NavItem kItems[5] = {
-        {AppId::LAUNCHER,      LV_SYMBOL_HOME,     "Home"},
-        {AppId::TIMERS,        LV_SYMBOL_BELL,     "Timers"},
-        {AppId::LIGHTING,      LV_SYMBOL_TINT,     "Light"},
-        {AppId::SHOPPING_LIST, LV_SYMBOL_CHARGE,   "Shop"},
-        {AppId::WEATHER,       LV_SYMBOL_SETTINGS, "More"},
+        {AppId::LAUNCHER,  LV_SYMBOL_HOME,     "Home"},
+        {AppId::TIMERS,    LV_SYMBOL_BELL,     "Timers"},
+        {AppId::NOTES,     LV_SYMBOL_EDIT,     "Notes"},
+        {AppId::WEATHER,   LV_SYMBOL_GPS,      "Weather"},
+        {AppId::LAUNCHER,  LV_SYMBOL_BARS,     "Apps"},  // index 4 = All Apps view
     };
 
 private:

@@ -6,10 +6,12 @@ namespace hal {
 
 struct TouchConfig {
     static constexpr int I2C_PORT    = 0;
-    static constexpr int SCL_GPIO    = 8;
-    static constexpr int SDA_GPIO    = 7;
-    static constexpr int INT_GPIO    = 4;
-    static constexpr int RST_GPIO    = 38;
+    // Elecrow CrowPanel Advanced 9" ESP32-P4: I2C on GPIO45(SDA)/GPIO46(SCL)
+    static constexpr int SCL_GPIO    = 46;
+    static constexpr int SDA_GPIO    = 45;
+    // GT911 reset/interrupt from Elecrow bsp_display.h
+    static constexpr int RST_GPIO    = 40;
+    static constexpr int INT_GPIO    = 42;
     static constexpr uint8_t GT911_ADDR = 0x5D;
     static constexpr uint32_t I2C_FREQ  = 400000;
 };

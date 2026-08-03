@@ -15,11 +15,11 @@ struct MeatType {
     const char* tip;
 };
 constexpr std::array<MeatType, 5> kMeats{{
-    {"Beef",    "Medium Rare", 57, "🐄", "Rest 5–10 min for perfect results."},
-    {"Pork",    "Minimum",     63, "🐷", "Let rest 3 minutes before serving."},
-    {"Lamb",    "Medium Rare", 57, "🐑", "Rest 5 minutes for best flavour."},
-    {"Poultry", "Minimum",     74, "🐔", "Always cook to minimum safe temp."},
-    {"Fish",    "Minimum",     63, "🐟", "Fish is done when it flakes easily."},
+    {"Beef",    "Medium Rare", 57, LV_SYMBOL_RIGHT, "Rest 5-10 min for perfect results."},
+    {"Pork",    "Minimum",     63, LV_SYMBOL_RIGHT, "Let rest 3 minutes before serving."},
+    {"Lamb",    "Medium Rare", 57, LV_SYMBOL_RIGHT, "Rest 5 minutes for best flavour."},
+    {"Poultry", "Minimum",     74, LV_SYMBOL_RIGHT, "Always cook to minimum safe temp."},
+    {"Fish",    "Minimum",     63, LV_SYMBOL_RIGHT, "Fish is done when it flakes easily."},
 }};
 
 void select_meat(lv_event_t* e) {

@@ -33,7 +33,5 @@ CONFIG_LV_FONT_MONTSERRAT_48=y
 # Disable unused LVGL demo/example code to keep ESP32-P4 image size in range
 # CONFIG_LV_BUILD_EXAMPLES is not set
 # CONFIG_LV_BUILD_DEMOS is not set
-# Enable WiFi (via ESP32-C6 wireless host co-processor)
-CONFIG_ESP_HOST_WIFI_ENABLED=y
 CONFIG_ESP_EFUSE_BLOCK_REV_MIN_FULL=0
 CONFIG_ESP_EFUSE_BLOCK_REV_MAX_FULL=199

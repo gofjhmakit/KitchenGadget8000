@@ -33,15 +33,14 @@ void LightingApp::build_ui(lv_obj_t* parent) {
     temp_slider_ = lv_slider_create(cont); lv_slider_set_range(temp_slider_, 0, 100); lv_slider_set_value(temp_slider_, 40, LV_ANIM_OFF);
     scene_label_ = lv_label_create(cont);
     for (auto* obj : {power_switch_, brightness_slider_, temp_slider_}) lv_obj_add_event_cb(obj, update_state, LV_EVENT_VALUE_CHANGED, this);
-    lv_obj_t* scenes = lv_obj_create(cont);
-    lv_obj_remove_style_all(scenes);
+    lv_obj_t* scenes = lv_obj_create(cont);    lv_obj_remove_style_all(scenes);
     lv_obj_set_layout(scenes, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(scenes, LV_FLEX_FLOW_ROW);
     for (const char* scene : {"Cooking", "Dining", "Ambient", "Off"}) {
         lv_obj_t* btn = ui::create_gold_button(scenes, scene);
         lv_obj_add_event_cb(btn, [](lv_event_t* e){ static_cast<LightingApp*>(lv_event_get_user_data(e))->apply_scene(lv_label_get_text(lv_obj_get_child(lv_event_get_target_obj(e), 0))); }, LV_EVENT_CLICKED, this);
     }
-    update_state(nullptr);
+    lv_label_set_text(scene_label_, "Off • 80% • 3800K");
 }
 
 void LightingApp::apply_scene(const char* scene) {

@@ -130,7 +130,7 @@ void ConverterApp::build_ui(lv_obj_t* parent) {
     lv_obj_set_style_text_color(from_dd_, lv_color_hex(ui::Color::TEXT_PRI), 0);
     lv_obj_add_event_cb(from_dd_, dropdown_changed, LV_EVENT_VALUE_CHANGED, this);
 
-    lv_obj_t* swap_btn = ui::create_gold_button(sel_row, "⇄");
+    lv_obj_t* swap_btn = ui::create_gold_button(sel_row, LV_SYMBOL_LOOP);
     lv_obj_set_style_pad_hor(swap_btn, ui::Spacing::LG, 0);
     lv_obj_add_event_cb(swap_btn, swap_units, LV_EVENT_CLICKED, this);
 

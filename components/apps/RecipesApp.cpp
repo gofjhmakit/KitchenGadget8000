@@ -68,7 +68,7 @@ void timer_from_text(lv_event_t* e) {
     const uint32_t seconds = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(
         lv_obj_get_user_data(lv_event_get_target_obj(e))));
     if (auto* base = core::AppManager::instance().app(core::AppId::TIMERS)) {
-        static_cast<TimersApp*>(base)->add_timer(seconds, "Recipe", "🍳");
+        static_cast<TimersApp*>(base)->add_timer(seconds, "Recipe", LV_SYMBOL_BELL);
         core::Notifications::instance().push(core::NotificationType::SUCCESS, "Timer added", "Recipe timer created.");
     }
     core::Navigation::instance().navigate_to(core::AppId::TIMERS, core::AppManager::Transition::SLIDE_LEFT);
@@ -395,7 +395,7 @@ void RecipesApp::show_list() {
             app->show_detail(idx);
         }, LV_EVENT_CLICKED, this);
 
-        ui::create_recipe_image(card, r.image_path, r.image.empty() ? "🍽" : r.image.c_str(), 300, 160);
+        ui::create_recipe_image(card, r.image_path, r.image.empty() ? LV_SYMBOL_IMAGE : r.image.c_str(), 300, 160);
 
         lv_obj_t* title_lbl = lv_label_create(card);
         lv_label_set_text(title_lbl, r.title.c_str());
@@ -488,7 +488,7 @@ void RecipesApp::show_detail(size_t index) {
 
         const lv_coord_t dw = lv_display_get_horizontal_resolution(lv_display_get_default());
         ui::create_recipe_image(content_, r.image_path,
-            r.image.empty() ? "🍽" : r.image.c_str(), dw - 2 * ui::Spacing::LG, 220);
+            r.image.empty() ? LV_SYMBOL_IMAGE : r.image.c_str(), dw - 2 * ui::Spacing::LG, 220);
 
         // Step content (counter, text, timer buttons, dots, prev/next)
         build_step_section(content_, this, r);
@@ -525,7 +525,7 @@ void RecipesApp::show_detail(size_t index) {
         // In fullscreen landscape, make image slightly taller
         const lv_coord_t img_h = fullscreen_ ? 230 : 200;
         ui::create_recipe_image(left, r.image_path,
-            r.image.empty() ? "🍽" : r.image.c_str(), 340, img_h);
+            r.image.empty() ? LV_SYMBOL_IMAGE : r.image.c_str(), 340, img_h);
 
         ui::create_section_title(left, "INGREDIENTS");
         for (const auto& ing : r.ingredients) {

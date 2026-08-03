@@ -1,7 +1,9 @@
 #include "core/BottomNav.h"
 
+#include "core/AppManager.h"
 #include "core/Navigation.h"
 #include "core/Notifications.h"
+#include "core/PowerManager.h"
 #include "ui/Theme.h"
 
 namespace core {
@@ -9,7 +11,10 @@ namespace {
 
 void nav_click(lv_event_t* e) {
     const auto* item = static_cast<const BottomNav::NavItem*>(lv_event_get_user_data(e));
-    // "More" slot re-mapped to weather; still navigates normally
+    // Index 4 = "Apps" = show All Apps view inside LauncherApp
+    if (item == &BottomNav::kItems[4]) {
+        AppManager::instance().set_pending_view(1);  // 1 = show all apps
+    }
     Navigation::instance().navigate_to(item->id, AppManager::Transition::FADE);
 }
 
@@ -78,14 +83,22 @@ void BottomNav::init(lv_obj_t* root_screen) {
 
 void BottomNav::set_active(AppId id) {
     if (container_ == nullptr) return;
+    // pending_view tells us if we should highlight "Apps" (index 4) vs "Home" (index 0)
+    const int pending = AppManager::instance().peek_pending_view();
     for (int i = 0; i < 5; ++i) {
-        // Only the first matching slot becomes active (avoids lighting both Home+More)
-        const bool active = (kItems[i].id == id) && (i == 0 || kItems[i - 1].id != id);
+        bool active = (kItems[i].id == id);
+        // Both Home(0) and Apps(4) map to LAUNCHER — differentiate by pending_view
+        if (id == AppId::LAUNCHER) {
+            if (pending == 1 || i == 4) {
+                active = (i == 4);   // "Apps" button lights up
+            } else {
+                active = (i == 0);   // "Home" button lights up
+            }
+        }
         const uint32_t icon_color = active ? ui::Color::GOLD_HI : ui::Color::TEXT_HINT;
         const uint32_t text_color = active ? ui::Color::GOLD    : ui::Color::TEXT_HINT;
         lv_obj_set_style_text_color(icon_labels_[i], lv_color_hex(icon_color), 0);
         lv_obj_set_style_text_color(text_labels_[i], lv_color_hex(text_color), 0);
-        // Gold underline bar for active item
         lv_obj_set_style_border_side(buttons_[i], active ? LV_BORDER_SIDE_TOP : LV_BORDER_SIDE_NONE, 0);
         lv_obj_set_style_border_color(buttons_[i], lv_color_hex(ui::Color::GOLD_HI), 0);
         lv_obj_set_style_border_width(buttons_[i], active ? 2 : 0, 0);

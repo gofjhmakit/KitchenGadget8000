@@ -28,7 +28,7 @@
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-IDF_PATH_DEFAULT="$HOME/esp/esp-idf"
+IDF_PATH_DEFAULT="$HOME/Downloads/esp_idf/esp-idf"
 TARGET="esp32p4"
 RECIPES_DIR="recipes"
 SPIFFS_PARTITION_OFFSET="0x620000"   # must match partitions.csv
@@ -117,7 +117,7 @@ setup_idf() {
 # ── Detect serial port ────────────────────────────────────────────────────────
 detect_port() {
     local candidates
-    candidates=$(ls /dev/cu.usbmodem* /dev/cu.wchusb* /dev/cu.CP* /dev/cu.SLAB* 2>/dev/null || true)
+    candidates=$(ls /dev/cu.usbmodem* /dev/cu.wchusb* /dev/cu.wchusbserial* /dev/cu.CP* /dev/cu.SLAB* /dev/cu.usbserial* 2>/dev/null || true)
     [[ -n "$candidates" ]] || log_die "No USB serial device found. Plug in the board and try again."
     local count; count=$(echo "$candidates" | wc -l | tr -d ' ')
     if [[ "$count" -gt 1 ]]; then
@@ -177,7 +177,11 @@ cmd_flash() {
     [[ -z "${PORT:-}" ]] && detect_port
     section "Flash  →  $PORT"; _section_start
     log_info "Writing firmware to device…"
-    idf.py -p "$PORT" -b "${BAUD_RATE:-115200}" flash
+    # Use esptool directly to support --before/--after flags (idf.py does not expose them)
+    python -m esptool --chip esp32p4 -p "$PORT" -b "${BAUD_RATE:-460800}" \
+        --before default_reset --after hard_reset \
+        write_flash --flash_mode dio --flash_size 16MB --flash_freq 80m \
+        "@build/flash_args" 2>&1 | grep -v "^Writing at\|^Compressed\|^Wrote\|^SHA digest\|^Configuring\|^Flash will"
     log_ok "Flash complete"
     section_done
 }

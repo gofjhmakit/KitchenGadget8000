@@ -33,6 +33,13 @@ void AppManager::launch(AppId id) {
         return;
     }
 
+    // If already on this app, just refresh nav highlight — don't re-create
+    // Exception: if a pending_view_ flag is set, the caller wants a specific sub-view
+    if (id == current_id_ && current_ != nullptr && pending_view_ == 0) {
+        BottomNav::instance().set_active(id);
+        return;
+    }
+
     previous_id_ = current_id_;
     current_id_ = id;
 
@@ -101,6 +108,11 @@ AppId AppManager::current_app() const { return current_id_; }
 AppId AppManager::previous_app() const { return previous_id_; }
 
 void AppManager::update(float delta_sec) {
+    for (auto& app : apps_) {
+        if (app.get() != current_) {
+            app->on_background_tick(delta_sec);
+        }
+    }
     if (current_ != nullptr) {
         current_->on_update(delta_sec);
     }

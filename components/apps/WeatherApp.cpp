@@ -18,13 +18,24 @@ std::string number_after(const std::string& text, const std::string& key) {
     return text.substr(pos, end - pos);
 }
 
+// Returns a short text label usable with any LVGL font (no emoji/Unicode needed)
 const char* icon_for_code(int code) {
-    if (code == 0) return "☀";
-    if (code <= 2) return "⛅";
-    if (code <= 48) return "☁";
-    if (code <= 67) return "🌧";
-    if (code <= 82) return "⛈";
-    return "🌨";
+    if (code == 0)  return "CLEAR";
+    if (code <= 2)  return "MOSTLY\nCLEAR";
+    if (code <= 48) return "CLOUDY";
+    if (code <= 67) return "RAIN";
+    if (code <= 82) return "STORM";
+    return "SNOW";
+}
+
+// Short 4-char version for forecast cards
+const char* icon_short_for_code(int code) {
+    if (code == 0)  return "CLR";
+    if (code <= 2)  return "PTLY";
+    if (code <= 48) return "CLDY";
+    if (code <= 67) return "RAIN";
+    if (code <= 82) return "STRM";
+    return "SNOW";
 }
 
 const char* day_short(int offset) {
@@ -81,7 +92,7 @@ void WeatherApp::build_ui(lv_obj_t* parent) {
     lv_obj_set_style_pad_row(left, ui::Spacing::SM, 0);
 
     weather_icon_label_ = lv_label_create(left);
-    lv_obj_set_style_text_font(weather_icon_label_, ui::Theme::font_huge(), 0);
+    lv_obj_set_style_text_font(weather_icon_label_, ui::Theme::font_title(), 0);
     lv_obj_set_style_text_color(weather_icon_label_, lv_color_hex(ui::Color::GOLD_HI), 0);
 
     current_label_ = lv_label_create(left);
@@ -184,7 +195,7 @@ void WeatherApp::refresh() {
         lv_label_set_text(humidity_label_, "55%");
         lv_label_set_text(wind_label_, "3 m/s");
         for (int i = 0; i < 5; ++i) {
-            lv_label_set_text(forecast_icon_labels_[i], "⛅");
+            lv_label_set_text(forecast_icon_labels_[i], "PTLY");
             lv_label_set_text(forecast_temp_labels_[i], "--/--");
         }
     } else {
@@ -238,7 +249,7 @@ void WeatherApp::refresh() {
         if (wc_pos != std::string::npos) parse_array(wc_pos, "wc", wc5);
 
         for (int i = 0; i < 5; ++i) {
-            lv_label_set_text(forecast_icon_labels_[i], icon_for_code(static_cast<int>(wc5[i])));
+            lv_label_set_text(forecast_icon_labels_[i], icon_short_for_code(static_cast<int>(wc5[i])));
             char tbuf[24];
             std::snprintf(tbuf, sizeof(tbuf), "%.0f°/%.0f°", max5[i], min5[i]);
             lv_label_set_text(forecast_temp_labels_[i], tbuf);

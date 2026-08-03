@@ -36,6 +36,9 @@ public:
     std::string ip_str_;
     StatusCallback status_cb_;
     bool initialized_{false};
+
+private:
+    bool wifi_started_{false};
 };
 
 } // namespace core

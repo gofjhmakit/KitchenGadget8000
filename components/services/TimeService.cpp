@@ -5,6 +5,13 @@
 #include "esp_log.h"
 #include "esp_sntp.h"
 
+#if __has_include("secrets.h")
+#  include "secrets.h"
+#endif
+#ifndef KG_TIMEZONE
+#  define KG_TIMEZONE "EET-2EEST,M3.5.0/3,M10.5.0/4"  // Finland default
+#endif
+
 namespace services {
 
 TimeService& TimeService::instance() {
@@ -14,7 +21,7 @@ TimeService& TimeService::instance() {
 
 void TimeService::init() {
     if (initialized_) return;
-    set_timezone("EET-2EEST,M3.5.0/3,M10.5.0/4");
+    set_timezone(KG_TIMEZONE);
     esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
     esp_sntp_setservername(0, const_cast<char*>("pool.ntp.org"));
     esp_sntp_init();

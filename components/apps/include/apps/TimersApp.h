@@ -26,6 +26,7 @@ public:
     void on_mount(lv_obj_t* parent) override;
     void on_unmount() override;
     void on_update(float delta_sec) override;
+    void on_background_tick(float delta_sec) override;
     bool has_active_timers() const;
     void add_timer(uint32_t duration_sec, const char* name = "Timer", const char* emoji = "⏱");
 public:

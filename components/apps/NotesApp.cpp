@@ -53,7 +53,7 @@ void NotesApp::rebuild_list() {
     for (size_t i = 0; i < notes_.size(); ++i) {
         const auto& note = notes_[i];
         std::string preview = note.body.substr(0, std::min<size_t>(note.body.size(), 80));
-        lv_obj_t* item = ui::create_list_item(list_, note.title.c_str(), preview.c_str(), "📝");
+        lv_obj_t* item = ui::create_list_item(list_, note.title.c_str(), preview.c_str(), LV_SYMBOL_EDIT);
         lv_obj_set_user_data(item, reinterpret_cast<void*>(static_cast<uintptr_t>(i)));
         lv_obj_add_event_cb(item, [](lv_event_t* e){ auto* app = static_cast<NotesApp*>(lv_event_get_user_data(e)); app->open_editor(static_cast<int>(reinterpret_cast<uintptr_t>(lv_obj_get_user_data(lv_event_get_target_obj(e))))); }, LV_EVENT_CLICKED, this);
     }

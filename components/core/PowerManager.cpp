@@ -128,9 +128,10 @@ void PowerManager::update(float delta_sec) {
     if (idle_sec_ >= screensaver_timeout_) {
         set_state(PowerState::SCREENSAVER);
         set_backlight(24);
-    } else if (idle_sec_ >= screensaver_timeout_ * 0.5f) {
+    } else if (idle_sec_ >= screensaver_timeout_ * 0.88f) {
+        // Only dim in the final 12% before screensaver kicks in
         set_state(PowerState::DIM);
-        set_backlight(std::max<uint8_t>(32, backlight_ / 3));
+        set_backlight(std::max<uint8_t>(80, backlight_ / 2));
     } else {
         set_state(PowerState::ACTIVE);
         set_backlight(backlight_);

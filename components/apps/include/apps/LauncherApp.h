@@ -15,6 +15,7 @@ public:
 
     void show_home(lv_obj_t* parent);
     void show_all_apps(lv_obj_t* parent);
+    void show_settings_overlay();
 
     lv_obj_t* root_{nullptr};
 

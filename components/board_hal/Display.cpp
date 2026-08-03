@@ -5,13 +5,14 @@
 #include "driver/ledc.h"
 #include "esp_heap_caps.h"
 #include "esp_lcd_panel_ops.h"
-#include "esp_lcd_panel_rgb.h"
+#include "esp_lcd_mipi_dsi.h"
+#include "esp_lcd_ek79007.h"
+#include "esp_ldo_regulator.h"
 #include "esp_log.h"
 
 namespace hal {
 namespace {
 constexpr const char* TAG = "Display";
-constexpr size_t DRAW_BUF_LINES = 40;
 constexpr ledc_mode_t BACKLIGHT_MODE = LEDC_LOW_SPEED_MODE;
 constexpr ledc_timer_t BACKLIGHT_TIMER = LEDC_TIMER_0;
 constexpr ledc_channel_t BACKLIGHT_CHANNEL = LEDC_CHANNEL_0;
@@ -26,9 +27,11 @@ Display& Display::instance() {
     return inst;
 }
 
+// use_dma2d=false → draw_bitmap is synchronous (CPU memcpy to PSRAM frame buffer).
+// This is simpler and avoids the async DMA race with the LVGL render buffer.
+// The 40-line partial buffer is 80KB; CPU copies this in ~80µs, fast enough for smooth UI.
 void Display::flush_cb(lv_display_t* display, const lv_area_t* area, uint8_t* color_map) {
-    auto* self = &Display::instance();
-    esp_lcd_panel_handle_t panel = to_panel(self->panel_handle_);
+    esp_lcd_panel_handle_t panel = to_panel(Display::instance().panel_handle_);
     if (panel != nullptr) {
         esp_lcd_panel_draw_bitmap(panel, area->x1, area->y1, area->x2 + 1, area->y2 + 1, color_map);
     }
@@ -40,6 +43,7 @@ bool Display::init() {
         return true;
     }
 
+    // Backlight on GPIO31, 11-bit resolution, 30 kHz, PLL_DIV clock (per Elecrow BSP)
     gpio_config_t bk_gpio{};
     bk_gpio.pin_bit_mask = 1ULL << DisplayConfig::BACKLIGHT_GPIO;
     bk_gpio.mode = GPIO_MODE_OUTPUT;
@@ -50,9 +54,9 @@ bool Display::init() {
     ledc_timer_config_t timer_cfg{};
     timer_cfg.speed_mode = BACKLIGHT_MODE;
     timer_cfg.timer_num = BACKLIGHT_TIMER;
-    timer_cfg.duty_resolution = LEDC_TIMER_8_BIT;
-    timer_cfg.freq_hz = 5000;
-    timer_cfg.clk_cfg = LEDC_AUTO_CLK;
+    timer_cfg.duty_resolution = LEDC_TIMER_11_BIT;
+    timer_cfg.freq_hz = 30000;
+    timer_cfg.clk_cfg = LEDC_USE_PLL_DIV_CLK;
     ESP_ERROR_CHECK(ledc_timer_config(&timer_cfg));
 
     ledc_channel_config_t channel_cfg{};
@@ -63,49 +67,81 @@ bool Display::init() {
     channel_cfg.duty = 0;
     ESP_ERROR_CHECK(ledc_channel_config(&channel_cfg));
 
-    esp_lcd_rgb_panel_config_t panel_config{};
-    panel_config.data_width = 16;
+    // Power on MIPI DSI PHY via internal LDO (channel 3 → VDD_MIPI_DPHY, 2.5V)
+    esp_ldo_channel_handle_t ldo_mipi_phy = nullptr;
+    esp_ldo_channel_config_t ldo_config{};
+    ldo_config.chan_id = 3;
+    ldo_config.voltage_mv = 2500;
+    ESP_ERROR_CHECK(esp_ldo_acquire_channel(&ldo_config, &ldo_mipi_phy));
+    ESP_LOGI(TAG, "MIPI DSI PHY LDO enabled");
+
+    // MIPI DSI bus: 2 data lanes at 900 Mbps
+    esp_lcd_dsi_bus_handle_t dsi_bus = nullptr;
+    esp_lcd_dsi_bus_config_t bus_config{};
+    bus_config.bus_id = 0;
+    bus_config.num_data_lanes = 2;
+    bus_config.phy_clk_src = MIPI_DSI_PHY_CLK_SRC_DEFAULT;
+    bus_config.lane_bit_rate_mbps = 900;
+    ESP_ERROR_CHECK(esp_lcd_new_dsi_bus(&bus_config, &dsi_bus));
+    dsi_bus_ = dsi_bus;
+
+    // DBI I/O for EK79007 init commands
+    esp_lcd_panel_io_handle_t io_handle = nullptr;
+    esp_lcd_dbi_io_config_t dbi_config{};
+    dbi_config.virtual_channel = 0;
+    dbi_config.lcd_cmd_bits = 8;
+    dbi_config.lcd_param_bits = 8;
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_dbi(dsi_bus, &dbi_config, &io_handle));
+    io_handle_ = io_handle;
+
+    // DPI video timing for 1024×600
+    esp_lcd_dpi_panel_config_t dpi_config{};
+    dpi_config.dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT;
+    dpi_config.dpi_clock_freq_mhz = 51;
+    dpi_config.virtual_channel = 0;
+    dpi_config.pixel_format = LCD_COLOR_PIXEL_FORMAT_RGB565;
+    dpi_config.num_fbs = 1;
+    dpi_config.video_timing.h_size = DisplayConfig::WIDTH;
+    dpi_config.video_timing.v_size = DisplayConfig::HEIGHT;
+    dpi_config.video_timing.hsync_back_porch = 160;
+    dpi_config.video_timing.hsync_pulse_width = 70;
+    dpi_config.video_timing.hsync_front_porch = 160;
+    dpi_config.video_timing.vsync_back_porch = 23;
+    dpi_config.video_timing.vsync_pulse_width = 10;
+    dpi_config.video_timing.vsync_front_porch = 12;
+    dpi_config.flags.use_dma2d = false;  // CPU copy: synchronous, no async race with LVGL buffer
+
+    ek79007_vendor_config_t vendor_config{};
+    vendor_config.mipi_config.dsi_bus = dsi_bus;
+    vendor_config.mipi_config.dpi_config = &dpi_config;
+
+    esp_lcd_panel_dev_config_t panel_config{};
+    panel_config.reset_gpio_num = -1;
+    panel_config.rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB;
     panel_config.bits_per_pixel = 16;
-    panel_config.num_fbs = 1;
-    panel_config.clk_src = LCD_CLK_SRC_DEFAULT;
-    panel_config.pclk_gpio_num = DisplayConfig::PCLK_GPIO;
-    panel_config.vsync_gpio_num = DisplayConfig::VSYNC_GPIO;
-    panel_config.hsync_gpio_num = DisplayConfig::HSYNC_GPIO;
-    panel_config.de_gpio_num = DisplayConfig::DE_GPIO;
-    panel_config.disp_gpio_num = -1;
-    int data_pins[16] = {
-        DisplayConfig::B0_GPIO, DisplayConfig::B1_GPIO, DisplayConfig::B2_GPIO, DisplayConfig::B3_GPIO, DisplayConfig::B4_GPIO,
-        DisplayConfig::G0_GPIO, DisplayConfig::G1_GPIO, DisplayConfig::G2_GPIO, DisplayConfig::G3_GPIO,
-        DisplayConfig::G4_GPIO, DisplayConfig::G5_GPIO,
-        DisplayConfig::R0_GPIO, DisplayConfig::R1_GPIO, DisplayConfig::R2_GPIO, DisplayConfig::R3_GPIO, DisplayConfig::R4_GPIO
-    };
-    std::memcpy(panel_config.data_gpio_nums, data_pins, sizeof(data_pins));
-    panel_config.timings.pclk_hz = DisplayConfig::PCLK_HZ;
-    panel_config.timings.h_res = DisplayConfig::WIDTH;
-    panel_config.timings.v_res = DisplayConfig::HEIGHT;
-    panel_config.timings.hsync_back_porch = 80;
-    panel_config.timings.hsync_front_porch = 40;
-    panel_config.timings.hsync_pulse_width = 48;
-    panel_config.timings.vsync_back_porch = 23;
-    panel_config.timings.vsync_front_porch = 13;
-    panel_config.timings.vsync_pulse_width = 3;
-    panel_config.flags.fb_in_psram = 1;
+    panel_config.vendor_config = &vendor_config;
 
     esp_lcd_panel_handle_t panel = nullptr;
-    esp_err_t err = esp_lcd_new_rgb_panel(&panel_config, &panel);
+    esp_err_t err = esp_lcd_new_panel_ek79007(io_handle, &panel_config, &panel);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_lcd_new_rgb_panel failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "esp_lcd_new_panel_ek79007 failed: %s", esp_err_to_name(err));
         return false;
     }
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel));
-    // esp_lcd_panel_disp_on_off not supported on ESP32-P4 v1.x RGB panel driver
-    // The panel is already on after init(); omitting this call is safe.
     panel_handle_ = panel;
 
-    const size_t buf_pixels = DisplayConfig::WIDTH * DRAW_BUF_LINES;
-    auto* buf1 = static_cast<lv_color16_t*>(heap_caps_malloc(buf_pixels * sizeof(lv_color16_t), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
-    auto* buf2 = static_cast<lv_color16_t*>(heap_caps_malloc(buf_pixels * sizeof(lv_color16_t), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
+    // Partial SRAM buffer: 1024×40 lines = 80KB
+    // Fast for rendering; CPU copy to PSRAM frame buffer takes ~80µs per flush
+    constexpr size_t LINES = 40;
+    constexpr size_t buf_bytes = DisplayConfig::WIDTH * LINES * sizeof(lv_color16_t);
+    auto* buf1 = static_cast<lv_color16_t*>(heap_caps_malloc(buf_bytes, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+    auto* buf2 = static_cast<lv_color16_t*>(heap_caps_malloc(buf_bytes, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+    if (buf1 == nullptr || buf2 == nullptr) {
+        ESP_LOGW(TAG, "Internal RAM full, falling back to PSRAM for draw buffer");
+        buf1 = static_cast<lv_color16_t*>(heap_caps_malloc(buf_bytes, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
+        buf2 = static_cast<lv_color16_t*>(heap_caps_malloc(buf_bytes, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
+    }
     if (buf1 == nullptr || buf2 == nullptr) {
         ESP_LOGE(TAG, "Failed to allocate LVGL draw buffers");
         return false;
@@ -114,7 +150,7 @@ bool Display::init() {
     lv_disp_ = lv_display_create(DisplayConfig::WIDTH, DisplayConfig::HEIGHT);
     lv_display_set_color_format(lv_disp_, LV_COLOR_FORMAT_RGB565);
     lv_display_set_flush_cb(lv_disp_, &Display::flush_cb);
-    lv_display_set_buffers(lv_disp_, buf1, buf2, buf_pixels * sizeof(lv_color16_t), LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_set_buffers(lv_disp_, buf1, buf2, buf_bytes, LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_set_default(lv_disp_);
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x000000), 0);
     set_backlight(200);
@@ -122,7 +158,8 @@ bool Display::init() {
 }
 
 void Display::set_backlight(uint8_t brightness) {
-    ledc_set_duty(BACKLIGHT_MODE, BACKLIGHT_CHANNEL, brightness);
+    uint32_t duty = (brightness == 0) ? 0 : ((uint32_t)brightness * 7 + 200);
+    ledc_set_duty(BACKLIGHT_MODE, BACKLIGHT_CHANNEL, duty);
     ledc_update_duty(BACKLIGHT_MODE, BACKLIGHT_CHANNEL);
 }
 

@@ -40,7 +40,7 @@ bool Touch::init() {
     io_cfg.control_phase_bytes = 1;
     io_cfg.dc_bit_offset = 0;
     io_cfg.lcd_cmd_bits = 16;
-    io_cfg.scl_speed_hz = 100000;
+    io_cfg.scl_speed_hz = 400000;
     io_cfg.flags.disable_control_phase = 1;
     esp_lcd_panel_io_handle_t io_handle = nullptr;
     err = esp_lcd_new_panel_io_i2c(bus_handle, &io_cfg, &io_handle);

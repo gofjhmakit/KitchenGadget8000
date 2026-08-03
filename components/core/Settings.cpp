@@ -5,6 +5,12 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 
+// Pull in WiFi credentials and other secrets from secrets.h (git-ignored).
+// Copy secrets.h.example → main/secrets.h and fill in your values.
+#if __has_include("secrets.h")
+#  include "secrets.h"
+#endif
+
 namespace core {
 namespace {
 constexpr const char* TAG = "Settings";
@@ -23,6 +29,18 @@ bool Settings::init() {
 
 void Settings::reset_defaults() {
     settings_ = AppSettings{};
+#ifdef WIFI_SSID
+    std::strncpy(settings_.wifi_ssid, WIFI_SSID, sizeof(settings_.wifi_ssid) - 1);
+#endif
+#ifdef WIFI_PASSWORD
+    std::strncpy(settings_.wifi_password, WIFI_PASSWORD, sizeof(settings_.wifi_password) - 1);
+#endif
+#ifdef HC_ACCESS_TOKEN
+    std::strncpy(settings_.hc_access_token, HC_ACCESS_TOKEN, sizeof(settings_.hc_access_token) - 1);
+#endif
+#ifdef HC_APPLIANCE_ID
+    std::strncpy(settings_.hc_appliance_id, HC_APPLIANCE_ID, sizeof(settings_.hc_appliance_id) - 1);
+#endif
 }
 
 bool Settings::save() {
@@ -47,6 +65,7 @@ bool Settings::load() {
     esp_err_t err = nvs_get_blob(nvs, KEY, &settings_, &size);
     nvs_close(nvs);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
+        reset_defaults();
         save();
         return true;
     }
@@ -56,6 +75,19 @@ bool Settings::load() {
         save();
         return false;
     }
+    // Migration: if WiFi SSID is empty or still has the placeholder, override with secrets.h
+#ifdef WIFI_SSID
+    const bool is_placeholder = (std::strcmp(settings_.wifi_ssid, "your_network_name") == 0 ||
+                                  std::strcmp(settings_.wifi_ssid, "YOUR_WIFI_SSID") == 0);
+    if (settings_.wifi_ssid[0] == '\0' || is_placeholder) {
+        std::strncpy(settings_.wifi_ssid, WIFI_SSID, sizeof(settings_.wifi_ssid) - 1);
+#ifdef WIFI_PASSWORD
+        std::strncpy(settings_.wifi_password, WIFI_PASSWORD, sizeof(settings_.wifi_password) - 1);
+#endif
+        save();
+        ESP_LOGI(TAG, "WiFi credentials migrated from secrets.h -> %s", settings_.wifi_ssid);
+    }
+#endif
     return true;
 }
 

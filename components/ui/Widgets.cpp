@@ -15,7 +15,7 @@ void keypad_event(lv_event_t* e) {
     lv_obj_t* ta = static_cast<lv_obj_t*>(lv_event_get_user_data(e));
     lv_obj_t* label = lv_obj_get_child(btn, 0);
     const char* txt = lv_label_get_text(label);
-    if (std::strcmp(txt, "←") == 0) {
+    if (std::strcmp(txt, LV_SYMBOL_LEFT) == 0 || std::strcmp(txt, LV_SYMBOL_BACKSPACE) == 0) {
         lv_textarea_delete_char(ta);
     } else if (std::strcmp(txt, "C") == 0) {
         lv_textarea_set_text(ta, "");
@@ -162,22 +162,33 @@ lv_obj_t* create_list_item(lv_obj_t* parent, const char* title, const char* subt
 }
 
 lv_obj_t* create_numpad(lv_obj_t* parent, lv_obj_t* target_textarea, bool allow_decimal, bool allow_negative) {
-    lv_obj_t* cont = create_card(parent);
+    // Plain container — no card padding so it fits compact in dialogs
+    lv_obj_t* cont = lv_obj_create(parent);
+    lv_obj_remove_style_all(cont);
+    lv_obj_set_style_bg_color(cont, lv_color_hex(ui::Color::SURFACE), 0);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_COVER, 0);
+    lv_obj_set_style_radius(cont, 8, 0);
     lv_obj_set_layout(cont, LV_LAYOUT_GRID);
     static int32_t cols[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-    static int32_t rows[] = {72, 72, 72, 72, 72, LV_GRID_TEMPLATE_LAST};
+    static int32_t rows[] = {40, 40, 40, 40, LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(cont, cols, rows);
-    lv_obj_set_size(cont, 300, LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_all(cont, ui::Spacing::XS, 0);
+    lv_obj_set_style_pad_gap(cont, ui::Spacing::XS, 0);
+    lv_obj_set_size(cont, LV_PCT(100), LV_SIZE_CONTENT);
 
-    std::array<const char*, 12> keys{"7", "8", "9", "4", "5", "6", "1", "2", "3", allow_negative ? "-" : "C", "0", allow_decimal ? "." : "←"};
+    std::array<const char*, 12> keys{
+        "7", "8", "9",
+        "4", "5", "6",
+        "1", "2", "3",
+        allow_negative ? "-" : "C",
+        "0",
+        allow_decimal ? "." : LV_SYMBOL_BACKSPACE,
+    };
     for (size_t i = 0; i < keys.size(); ++i) {
         lv_obj_t* btn = create_gold_button(cont, keys[i]);
         lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, i % 3, 1, LV_GRID_ALIGN_STRETCH, i / 3, 1);
         lv_obj_add_event_cb(btn, keypad_event, LV_EVENT_CLICKED, target_textarea);
     }
-    lv_obj_t* backspace = create_gold_button(cont, "←");
-    lv_obj_set_grid_cell(backspace, LV_GRID_ALIGN_STRETCH, 0, 3, LV_GRID_ALIGN_STRETCH, 4, 1);
-    lv_obj_add_event_cb(backspace, keypad_event, LV_EVENT_CLICKED, target_textarea);
     return cont;
 }
 
@@ -232,20 +243,17 @@ lv_obj_t* create_recipe_image(lv_obj_t* parent, const std::string& spiffs_path,
 
     if (has_file) {
         lv_obj_t* img = lv_image_create(cont);
-        // LVGL FS driver registered with letter 'S'; path is "S:" + absolute POSIX path
         const std::string lvgl_path = "S:" + spiffs_path;
         lv_image_set_src(img, lvgl_path.c_str());
         lv_obj_set_size(img, w, h);
         lv_obj_set_style_img_recolor_opa(img, LV_OPA_0, 0);
         lv_obj_center(img);
     } else {
-        // Styled fallback: emoji centred on a dark card with subtle gold accent
         lv_obj_t* lbl = lv_label_create(cont);
         lv_label_set_text(lbl, emoji_fallback != nullptr ? emoji_fallback : "🍽");
         lv_obj_set_style_text_font(lbl, Theme::font_huge(), 0);
         lv_obj_set_style_text_color(lbl, lv_color_hex(Color::GOLD), 0);
         lv_obj_center(lbl);
-        // Subtle gold border hint
         lv_obj_set_style_border_color(cont, lv_color_hex(Color::GOLD_DIM), 0);
         lv_obj_set_style_border_width(cont, 1, 0);
     }
@@ -335,13 +343,11 @@ lv_obj_t* show_styled_keyboard(lv_obj_t* screen, lv_obj_t* textarea,
     lv_obj_align(kbd, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_move_foreground(kbd);
 
-    // Background
     lv_obj_set_style_bg_color(kbd, lv_color_hex(Color::SURFACE), 0);
     lv_obj_set_style_border_color(kbd, lv_color_hex(Color::GOLD_DIM), 0);
     lv_obj_set_style_border_width(kbd, 1, 0);
     lv_obj_set_style_border_side(kbd, LV_BORDER_SIDE_TOP, 0);
 
-    // Individual key buttons
     lv_obj_set_style_bg_color(kbd, lv_color_hex(Color::SURFACE_2), LV_PART_ITEMS);
     lv_obj_set_style_bg_opa(kbd, LV_OPA_COVER, LV_PART_ITEMS);
     lv_obj_set_style_border_color(kbd, lv_color_hex(Color::SEPARATOR), LV_PART_ITEMS);
@@ -350,11 +356,9 @@ lv_obj_t* show_styled_keyboard(lv_obj_t* screen, lv_obj_t* textarea,
     lv_obj_set_style_text_color(kbd, lv_color_hex(Color::TEXT_PRI), LV_PART_ITEMS);
     lv_obj_set_style_text_font(kbd, Theme::font_body(), LV_PART_ITEMS);
 
-    // Pressed state
     lv_obj_set_style_bg_color(kbd, lv_color_hex(Color::GOLD_DIM), LV_PART_ITEMS | LV_STATE_PRESSED);
     lv_obj_set_style_text_color(kbd, lv_color_hex(Color::GOLD_HI), LV_PART_ITEMS | LV_STATE_PRESSED);
 
-    // Close keyboard on OK / Cancel
     lv_obj_add_event_cb(kbd, [](lv_event_t* e) {
         lv_obj_delete_async(lv_event_get_target_obj(e));
     }, LV_EVENT_READY, nullptr);
@@ -366,4 +370,3 @@ lv_obj_t* show_styled_keyboard(lv_obj_t* screen, lv_obj_t* textarea,
 }
 
 } // namespace ui
-

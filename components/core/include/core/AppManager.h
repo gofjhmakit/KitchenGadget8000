@@ -30,6 +30,8 @@ public:
     virtual void on_mount(lv_obj_t* parent) = 0;
     virtual void on_unmount() = 0;
     virtual void on_update(float delta_sec) = 0;
+    // Called for non-active apps every frame — safe for background work (no UI)
+    virtual void on_background_tick(float /*delta_sec*/) {}
     virtual AppId id() const = 0;
     virtual const char* name() const = 0;
     virtual const char* icon() const = 0;
@@ -50,6 +52,10 @@ public:
     void set_root_screen(lv_obj_t* screen) { root_screen_ = screen; }
     void set_transition(Transition t) { pending_transition_ = t; }
     IApp* app(AppId id) const { return find(id); }
+    // Generic view flag: BottomNav sets it before navigating; mounted app reads and resets it
+    void set_pending_view(int flag) { pending_view_ = flag; }
+    int  take_pending_view()        { int f = pending_view_; pending_view_ = 0; return f; }
+    int  peek_pending_view() const  { return pending_view_; }
 
 private:
     AppManager() = default;
@@ -62,6 +68,7 @@ private:
     lv_obj_t* root_screen_{nullptr};
     lv_obj_t* current_container_{nullptr};
     Transition pending_transition_{Transition::FADE};
+    int pending_view_{0};  // generic hint passed to the next mounted app
 };
 
 } // namespace core

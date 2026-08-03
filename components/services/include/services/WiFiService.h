@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 namespace services {
 
@@ -16,6 +18,8 @@ public:
     std::string ssid_;
     std::string password_;
     bool running_{false};
+    bool mdns_started_{false};
+    TaskHandle_t task_handle_{nullptr};
 };
 
 } // namespace services

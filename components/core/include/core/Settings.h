@@ -3,6 +3,8 @@
 
 namespace core {
 
+enum class AlarmType : uint8_t { BEEP = 0, CHIME = 1, DING = 2, MUTE = 3 };
+
 struct AppSettings {
     char wifi_ssid[64]{};
     char wifi_password[64]{};
@@ -17,6 +19,8 @@ struct AppSettings {
     char github_repo[128]{"gofjhmakit/KitchenGadget8000"};
     char github_branch[32]{"main"};
     uint32_t github_sync_interval_sec{3600};
+    uint8_t alarm_volume{75};
+    uint8_t alarm_type{0};
 };
 
 class Settings {
