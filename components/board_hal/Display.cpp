@@ -99,7 +99,8 @@ bool Display::init() {
     }
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel));
-    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel, true));
+    // esp_lcd_panel_disp_on_off not supported on ESP32-P4 v1.x RGB panel driver
+    // The panel is already on after init(); omitting this call is safe.
     panel_handle_ = panel;
 
     const size_t buf_pixels = DisplayConfig::WIDTH * DRAW_BUF_LINES;
