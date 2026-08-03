@@ -4,11 +4,3 @@ dependencies:
   lvgl/lvgl: "~9.2.0"
   espressif/mdns: ">=1.0.0"
   espressif/esp_lcd_ek79007: ">=1.0.0"
-  espressif/esp_hosted:
-    version: ">=2.0.0,<2.4.0"
-    rules:
-      - if: "target in [esp32p4]"
-  espressif/esp_wifi_remote:
-    version: ">=0.3.0,<0.4.0"
-    rules:
-      - if: "target in [esp32p4]"
