@@ -69,9 +69,9 @@ bool AudioService::init() {
     amp_cfg.pin_bit_mask = 1ULL << static_cast<uint32_t>(PIN_AMP);
     amp_cfg.mode = GPIO_MODE_OUTPUT;
     gpio_config(&amp_cfg);
-    gpio_set_level(PIN_AMP, 0);
+    gpio_set_level(PIN_AMP, 1);  // HIGH = amp OFF (active-low NS4168)
 
-    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
+    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_1, I2S_ROLE_MASTER);
     chan_cfg.dma_desc_num = 6;
     chan_cfg.dma_frame_num = DMA_FRAMES;
     esp_err_t err = i2s_new_channel(&chan_cfg, &tx_chan, nullptr);
@@ -124,7 +124,7 @@ void AudioService::deinit() {
         i2s_del_channel(tx_chan);
         tx_chan = nullptr;
     }
-    gpio_set_level(PIN_AMP, 0);
+    gpio_set_level(PIN_AMP, 1);  // HIGH = amp OFF
     initialized_ = false;
 }
 
@@ -142,7 +142,7 @@ void AudioService::alarm_task(void* arg) {
 }
 
 void AudioService::generate_alarm(uint8_t type, uint8_t volume) {
-    gpio_set_level(PIN_AMP, 1);
+    gpio_set_level(PIN_AMP, 0);   // LOW = amp ON (active-low NS4168)
     vTaskDelay(pdMS_TO_TICKS(120));  // NS4168 needs ~100ms to stabilise
 
     for (int rep = 0; rep < 5 && !stop_requested_; ++rep) {
@@ -167,7 +167,7 @@ void AudioService::generate_alarm(uint8_t type, uint8_t volume) {
     }
 
     silence(50);
-    gpio_set_level(PIN_AMP, 0);
+    gpio_set_level(PIN_AMP, 1);  // HIGH = amp OFF
     playing_ = false;
     stop_requested_ = false;
 }
