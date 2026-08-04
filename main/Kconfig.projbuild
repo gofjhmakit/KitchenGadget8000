@@ -47,33 +47,3 @@ menu "KitchenGadget8000 Configuration"
             Set to -1 to disable hardware charging detection.
 
 endmenu
-
-menu "Slave Target (esp_hosted)"
-    choice SLAVE_IDF_TARGET
-        prompt "Choose slave chip target"
-        default SLAVE_IDF_TARGET_ESP32C6
-        help
-            Selects which ESP chip is the Wi-Fi co-processor for esp_hosted / esp_wifi_remote.
-
-        config SLAVE_IDF_TARGET_ESP32
-            bool "esp32"
-        config SLAVE_IDF_TARGET_ESP32S2
-            bool "esp32s2"
-        config SLAVE_IDF_TARGET_ESP32C3
-            bool "esp32c3"
-        config SLAVE_IDF_TARGET_ESP32S3
-            bool "esp32s3"
-        config SLAVE_IDF_TARGET_ESP32C2
-            bool "esp32c2"
-        config SLAVE_IDF_TARGET_ESP32C6
-            bool "esp32c6"
-        config SLAVE_IDF_TARGET_ESP32H2
-            bool "esp32h2"
-        config SLAVE_IDF_TARGET_ESP32P4
-            bool "esp32p4"
-        config SLAVE_IDF_TARGET_ESP32C5
-            bool "esp32c5"
-        config SLAVE_IDF_TARGET_ESP32C61
-            bool "esp32c61"
-    endchoice
-endmenu
