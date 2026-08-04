@@ -13,6 +13,9 @@ constexpr const char* TAG = "WiFiService";
 
 void wifi_task(void* arg) {
     auto* self = static_cast<WiFiService*>(arg);
+    // Init the network stack (including esp_hosted C6 SDIO handshake) here in
+    // the background so it never blocks the main boot sequence or the UI.
+    core::Network::instance().init();
     while (self->running_) {
         if (!self->ssid_.empty() && !core::Network::instance().is_connected() && core::Network::instance().status() != core::NetworkStatus::CONNECTING) {
             core::Network::instance().connect(self->ssid_.c_str(), self->password_.c_str());
@@ -38,7 +41,8 @@ void WiFiService::ensure_task() {
 void WiFiService::start(const char* ssid, const char* password) {
     ssid_ = ssid ? ssid : "";
     password_ = password ? password : "";
-    core::Network::instance().init();
+    // Network::init() (including C6 SDIO handshake) is done inside wifi_task
+    // so this call returns immediately without blocking the caller.
     running_ = true;
     ensure_task();
     if (!mdns_started_) {

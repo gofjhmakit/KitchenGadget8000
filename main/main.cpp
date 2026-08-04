@@ -184,9 +184,8 @@ extern "C" void app_main(void) {
     core::PowerManager::instance().set_screensaver_timeout(cfg.screensaver_timeout);
     ESP_LOGI(TAG, "[9/14] Power manager OK (backlight=%d)", cfg.backlight);
 
-    ESP_LOGI(TAG, "[10/14] Initialising network...");
-    core::Network::instance().init();
-    ESP_LOGI(TAG, "[10/14] Network OK");
+    // Network (WiFi via C6 co-processor) is initialised lazily by WiFiService
+    // in its background task — doing it here blocks boot while C6 SDIO enumerates.
 
     ESP_LOGI(TAG, "[11/14] Registering apps...");
     auto& mgr = core::AppManager::instance();
