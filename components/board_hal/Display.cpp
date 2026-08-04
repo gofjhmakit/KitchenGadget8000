@@ -97,17 +97,17 @@ bool Display::init() {
     // DPI video timing for 1024×600
     esp_lcd_dpi_panel_config_t dpi_config{};
     dpi_config.dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT;
-    dpi_config.dpi_clock_freq_mhz = 51;
+    dpi_config.dpi_clock_freq_mhz = 52;   // per EK79007_1024_600_PANEL_60HZ_CONFIG macro
     dpi_config.virtual_channel = 0;
     dpi_config.pixel_format = LCD_COLOR_PIXEL_FORMAT_RGB565;
     dpi_config.num_fbs = 1;
     dpi_config.video_timing.h_size = DisplayConfig::WIDTH;
     dpi_config.video_timing.v_size = DisplayConfig::HEIGHT;
     dpi_config.video_timing.hsync_back_porch = 160;
-    dpi_config.video_timing.hsync_pulse_width = 70;
+    dpi_config.video_timing.hsync_pulse_width = 10;  // was 70, driver reference is 10
     dpi_config.video_timing.hsync_front_porch = 160;
     dpi_config.video_timing.vsync_back_porch = 23;
-    dpi_config.video_timing.vsync_pulse_width = 10;
+    dpi_config.video_timing.vsync_pulse_width = 1;   // was 10, driver reference is 1
     dpi_config.video_timing.vsync_front_porch = 12;
     dpi_config.flags.use_dma2d = false;  // CPU copy: synchronous, no async race with LVGL buffer
 
